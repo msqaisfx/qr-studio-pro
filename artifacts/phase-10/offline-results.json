@@ -1,0 +1,38 @@
+{
+  "navigation": true,
+  "qrGeneration": true,
+  "shapes": true,
+  "colors": true,
+  "logo": true,
+  "contentTypes": true,
+  "indexedDbSaveOpen": true,
+  "templates": true,
+  "embeddedGuard": {
+    "status": "warning",
+    "error": ""
+  },
+  "scanGuardStatus": "warning",
+  "exports": [
+    {
+      "format": "png",
+      "bytes": 16702
+    },
+    {
+      "format": "svg",
+      "bytes": 47529
+    },
+    {
+      "format": "webp",
+      "bytes": 12690
+    },
+    {
+      "format": "jpeg",
+      "bytes": 36132
+    },
+    {
+      "format": "pdf",
+      "bytes": 86813
+    }
+  ],
+  "runtimeErrors": []
+}

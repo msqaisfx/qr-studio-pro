@@ -1,35 +1,37 @@
-import { useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { Header } from '../components/Header'
 import { ToolSidebar, type StudioTool } from '../components/ToolSidebar'
 import { InspectorPanel } from '../components/InspectorPanel'
 import { ContentEditor } from '../features/editor/ContentEditor'
 import { QRPreview } from '../features/qr/QRPreview'
-import { ShapesPanel } from '../features/qr/ShapesPanel'
-import { ColorsPanel } from '../features/qr/ColorsPanel'
-import { LogoPanel } from '../features/qr/LogoPanel'
-import { ExportPanel } from '../features/export/ExportPanel'
-import { QualityPanel } from '../features/quality/QualityPanel'
 import { defaultQrDesignSettings, type LogoGuardState, type QrDesignSettings } from '../types/qr'
 import { useApp } from './appContext'
 import { buildPayload, initialContentWorkspace, type ContentWorkspace } from '../features/content/contentTypes'
 import { defaultExportOptions, type ExportOptions } from '../features/export/exportTypes'
-import { ProjectsPanel } from '../features/projects/ProjectsPanel'
 import { indexedDbProjectRepository } from '../features/projects/projectRepository'
 import { containsSensitiveData, createProject, type ProjectSnapshot, type SavedProject, type SaveState } from '../features/projects/projectTypes'
 import { parseProjectFile, serializeProject, MAX_PROJECT_FILE_BYTES } from '../features/projects/projectValidation'
-import { TemplatesPanel } from '../features/templates/TemplatesPanel'
+import { PwaControls } from '../features/pwa/PwaControls'
+
+const ShapesPanel=lazy(()=>import('../features/qr/ShapesPanel').then(module=>({default:module.ShapesPanel})))
+const ColorsPanel=lazy(()=>import('../features/qr/ColorsPanel').then(module=>({default:module.ColorsPanel})))
+const LogoPanel=lazy(()=>import('../features/qr/LogoPanel').then(module=>({default:module.LogoPanel})))
+const ExportPanel=lazy(()=>import('../features/export/ExportPanel').then(module=>({default:module.ExportPanel})))
+const QualityPanel=lazy(()=>import('../features/quality/QualityPanel').then(module=>({default:module.QualityPanel})))
+const ProjectsPanel=lazy(()=>import('../features/projects/ProjectsPanel').then(module=>({default:module.ProjectsPanel})))
+const TemplatesPanel=lazy(()=>import('../features/templates/TemplatesPanel').then(module=>({default:module.TemplatesPanel})))
 
 const repository=indexedDbProjectRepository
 export function App() {
   const [contentState,setContentState]=useState<ContentWorkspace>(initialContentWorkspace);const [activeTool,setActiveTool]=useState<StudioTool>('content');const [settings,setSettings]=useState<QrDesignSettings>(defaultQrDesignSettings);const [exportOptions,setExportOptions]=useState<ExportOptions>(defaultExportOptions);const [logoGuard,setLogoGuard]=useState<LogoGuardState>('idle')
-  const [projects,setProjects]=useState<SavedProject[]>([]);const [currentId,setCurrentId]=useState<string|null>(null);const [autosave,setAutosave]=useState(false);const [saveState,setSaveState]=useState<SaveState>('idle');const [storageError,setStorageError]=useState('');const [sensitiveAllowed,setSensitiveAllowed]=useState(false);const saveSequence=useRef(0)
+  const [projects,setProjects]=useState<SavedProject[]>([]);const [currentId,setCurrentId]=useState<string|null>(null);const [autosave,setAutosave]=useState(false);const [saveState,setSaveState]=useState<SaveState>('idle');const [storageError,setStorageError]=useState('');const [sensitiveAllowed,setSensitiveAllowed]=useState(false);const [savedFingerprint,setSavedFingerprint]=useState('');const saveSequence=useRef(0)
   const {t}=useApp();const payloadResult=buildPayload(contentState.forms[contentState.activeType],settings.errorCorrectionLevel);const content=payloadResult.valid?payloadResult.payload:'';const sensitive=containsSensitiveData(contentState)
   const snapshot=():ProjectSnapshot=>({content:structuredClone(contentState),encodedPayload:content,design:structuredClone(settings),exportPreferences:structuredClone(exportOptions)})
   const refresh=async()=>{try{setProjects(await repository.list());setStorageError('')}catch(error){setStorageError(error instanceof Error&&error.message==='storage-quota'?'storageQuota':'storageFailure')}}
   useEffect(()=>{repository.list().then(setProjects).catch(()=>setStorageError('storageFailure'))},[])
-  const persist=async(project:SavedProject)=>{const sequence=++saveSequence.current;setSaveState('saving');try{await repository.put(project);if(sequence!==saveSequence.current)return;setCurrentId(project.id);setSaveState('saved');setStorageError('');await refresh()}catch(error){if(sequence!==saveSequence.current)return;setSaveState('error');setStorageError(error instanceof Error&&error.message==='storage-quota'?'storageQuota':'storageFailure')}}
+  const persist=async(project:SavedProject)=>{const sequence=++saveSequence.current;setSaveState('saving');try{await repository.put(project);if(sequence!==saveSequence.current)return;setCurrentId(project.id);setSavedFingerprint(JSON.stringify({content:project.content,design:project.design,exportPreferences:project.exportPreferences}));setSaveState('saved');setStorageError('');await refresh()}catch(error){if(sequence!==saveSequence.current)return;setSaveState('error');setStorageError(error instanceof Error&&error.message==='storage-quota'?'storageQuota':'storageFailure')}}
   const save=async(name:string,allowSensitive:boolean,saveAs:boolean)=>{if(sensitive&&!allowSensitive)return;setSensitiveAllowed(allowSensitive||!sensitive);const existing=!saveAs&&currentId?await repository.get(currentId):null;const project=existing?{...existing,...snapshot(),name:name.trim(),contentType:contentState.activeType,updatedAt:new Date().toISOString()}:createProject(name,snapshot());await persist(project)}
-  const open=async(id:string)=>{try{const project=await repository.get(id);if(!project)throw new Error();setContentState(project.content);setSettings(project.design);setExportOptions(project.exportPreferences);setCurrentId(project.id);setSensitiveAllowed(true);setAutosave(false);setActiveTool('content');setStorageError('')}catch{setStorageError('storageFailure')}}
+  const open=async(id:string)=>{try{const project=await repository.get(id);if(!project)throw new Error();setContentState(project.content);setSettings(project.design);setExportOptions(project.exportPreferences);setCurrentId(project.id);setSavedFingerprint(JSON.stringify({content:project.content,design:project.design,exportPreferences:project.exportPreferences}));setSensitiveAllowed(true);setAutosave(false);setActiveTool('content');setStorageError('')}catch{setStorageError('storageFailure')}}
   const rename=async(id:string,name:string)=>{const p=await repository.get(id);if(p)await persist({...p,name:name.trim(),updatedAt:new Date().toISOString()})}
   const duplicate=async(id:string)=>{const p=await repository.get(id);if(p){const copy=createProject(`${p.name} ${t('copySuffix')}`,p);await persist(copy)}}
   const remove=async(id:string)=>{try{await repository.delete(id);if(currentId===id){setCurrentId(null);setAutosave(false)}await refresh()}catch{setStorageError('storageFailure')}}
@@ -39,5 +41,6 @@ export function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(()=>{if(!autosave||!currentId||!content||sensitive&&!sensitiveAllowed)return;const timer=setTimeout(async()=>{const existing=await repository.get(currentId);if(!existing)return;await persist({...existing,...snapshot(),contentType:contentState.activeType,updatedAt:new Date().toISOString()})},800);return()=>clearTimeout(timer)},[autosave,currentId,contentState,settings,exportOptions,content,sensitive,sensitiveAllowed])
   const panel=activeTool==='projects'?<ProjectsPanel projects={projects} currentId={currentId} saveState={saveState} error={storageError} sensitive={sensitive} autosave={autosave} onAutosave={setAutosave} onSave={(...args)=>void save(...args)} onOpen={id=>void open(id)} onRename={(id,name)=>void rename(id,name)} onDuplicate={id=>void duplicate(id)} onDelete={id=>void remove(id)} onExport={id=>void exportProject(id)} onImport={file=>void importProject(file)}/>:activeTool==='content'?<ContentEditor state={contentState} onChange={setContentState} level={settings.errorCorrectionLevel}/>:activeTool==='shapes'?<ShapesPanel settings={settings} onChange={setSettings}/>:activeTool==='colors'?<ColorsPanel settings={settings} onChange={setSettings}/>:activeTool==='logo'?<LogoPanel settings={settings} onChange={setSettings} guard={logoGuard}/>:activeTool==='quality'?<QualityPanel payload={content} settings={settings}/>:activeTool==='templates'?<TemplatesPanel settings={settings} contentType={contentState.activeType} payload={content} onChange={setSettings}/>:<ExportPanel payload={content} settings={settings} options={exportOptions} onOptionsChange={setExportOptions}/>
-  return <div className="app-shell" id="top"><Header/><main className="studio-main"><div className="studio-intro"><div><span>QR STUDIO / 09</span><h2>{t('tagline')}</h2><p>{t('intro')}</p></div></div><div className="studio-grid"><ToolSidebar activeTool={activeTool} onSelect={setActiveTool}/><section className="editor-column">{panel}</section><QRPreview value={content} settings={settings} onLogoGuardChange={setLogoGuard} onOpenExport={()=>setActiveTool('export')}/><InspectorPanel value={content} settings={settings} contentType={contentState.activeType}/></div></main><footer>{t('footer')}</footer></div>
+  const fingerprint=JSON.stringify({content:contentState,design:settings,exportPreferences:exportOptions});const hasUnsavedChanges=Boolean(content)&&fingerprint!==savedFingerprint
+  return <div className="app-shell" id="top"><Header/><main className="studio-main"><div className="studio-intro"><div><span>QR STUDIO / 10</span><h2>{t('tagline')}</h2><p>{t('intro')}</p></div></div><div className="studio-grid"><ToolSidebar activeTool={activeTool} onSelect={setActiveTool}/><section className="editor-column"><Suspense fallback={<div className="panel-loading" role="status">{t('loadingTool')}</div>}>{panel}</Suspense></section><QRPreview value={content} settings={settings} onLogoGuardChange={setLogoGuard} onOpenExport={()=>setActiveTool('export')}/><InspectorPanel value={content} settings={settings} contentType={contentState.activeType}/></div></main><footer>{t('footer')}</footer><PwaControls hasUnsavedChanges={hasUnsavedChanges}/></div>
 }

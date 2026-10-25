@@ -41,6 +41,7 @@ export async function runQualityGuard(payload: string, settings: QrDesignSetting
   const prepared = prepareQrEngine(payload, settings, size)
   const raw = existingBlob ?? await prepared.engine.getRawData('png')
   if (!(raw instanceof Blob)) return buildQualityReport(payload, settings, { decoded: null, payloadMatches: null, moduleCount: prepared.moduleCount, modulePixels: null, quietZoneModules: null, formatValid, exportSize: size })
-  try { return buildQualityReport(payload, settings, await inspectQrImage(raw, payload, prepared.moduleCount, size, formatValid)) }
+  const resolvedFormatValid = formatValid ?? (!existingBlob && raw.type === 'image/png' ? true : null)
+  try { return buildQualityReport(payload, settings, await inspectQrImage(raw, payload, prepared.moduleCount, size, resolvedFormatValid)) }
   catch { return buildQualityReport(payload, settings, { decoded: null, payloadMatches: null, moduleCount: prepared.moduleCount, modulePixels: null, quietZoneModules: null, formatValid, exportSize: size }) }
 }

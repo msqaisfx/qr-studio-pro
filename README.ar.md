@@ -2,7 +2,7 @@
 
 مصمم رموز QR احترافي ومفتوح المصدر، يركز على الخصوصية وتجربة استخدام نظيفة.
 
-> المرحلة التاسعة — الإصدار 0.1.0
+> المرحلة العاشرة — الإصدار 0.1.0
 
 ## المزايا
 
@@ -22,6 +22,9 @@
 - حالات صريحة PASS وWARNING وFAIL وUNKNOWN مع توصيات استرشادية ومنع التصدير عند الفشل أو تعذر التحقق
 - مشاريع محلية بإصدارات داخل IndexedDB مع CRUD وبحث وترتيب وحفظ تلقائي اختياري وملفات JSON متحققة
 - اثنا عشر قالبًا احترافيًا فعليًا وقابلًا للتعديل يحافظ على محتوى QR والشعار الحاليين
+- تطبيق PWA قابل للتثبيت مع مسارات آمنة للاستضافة الفرعية وأيقونات أصلية وعمل دون اتصال وتحديث يتحكم به المستخدم
+- توليد وتصميم وفحص وحفظ محلي وتصدير PNG/SVG/WebP/JPEG/PDF دون اتصال بعد التحميل الأول
+- تحميل كسول لأدوات الاستوديو يقلل حزمة JavaScript الأولية
 - خطا Inter وNoto Sans Arabic مضمنان محليًا
 - خصوصية محلية: تتم معالجة الإدخال داخل المتصفح فقط
 - فحص TypeScript وESLint واختبارات وحدات وبناء إنتاجي
@@ -49,11 +52,12 @@ pnpm verify:phase06
 pnpm verify:phase07
 pnpm verify:phase08
 pnpm verify:phase09
+pnpm verify:phase10
 ```
 
 ## نطاق المرحلة
 
-لا يتضمن هذا الإصدار Backend أو قاعدة بيانات خادمية أو حسابات أو إحصائيات أو دفعًا أو QR ديناميكيًا أو إطارات. راجع [docs/PHASES.md](docs/PHASES.md) و[docs/LOCAL_PROJECTS.md](docs/LOCAL_PROJECTS.md) و[docs/SCAN_GUARD.md](docs/SCAN_GUARD.md) و[docs/EXPORT_ARCHITECTURE.md](docs/EXPORT_ARCHITECTURE.md).
+لا يتضمن هذا الإصدار Backend أو قاعدة بيانات خادمية أو حسابات أو إحصائيات أو دفعًا أو QR ديناميكيًا أو إطارات. راجع [docs/PHASES.md](docs/PHASES.md) و[docs/PWA_AND_OFFLINE.md](docs/PWA_AND_OFFLINE.md) و[docs/LOCAL_PROJECTS.md](docs/LOCAL_PROJECTS.md) و[docs/SCAN_GUARD.md](docs/SCAN_GUARD.md).
 
 ## المساهمة والأمان
 
