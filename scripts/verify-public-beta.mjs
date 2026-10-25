@@ -102,11 +102,12 @@ try {
   }
   if (!downloaded || (await stat(`${downloads}/${downloaded}`)).size < 1000) throw new Error('public PNG export failed')
   await evaluate(`Promise.race([navigator.serviceWorker.ready.then(()=>true),new Promise((_,reject)=>setTimeout(()=>reject(new Error('service worker ready timeout')),20000))])`)
-  const serviceWorkerActive = await evaluate(`navigator.serviceWorker.ready.then(registration=>Boolean(registration.active))`)
-  const cacheReady = await evaluate(`caches.keys().then(async names=>{for(const name of names){const cache=await caches.open(name);const keys=await cache.keys();if(keys.some(request=>new URL(request.url).pathname.endsWith('/index.html')))return true}return false})`)
-  if (!serviceWorkerActive || !cacheReady) throw new Error('PWA worker or offline cache is not ready')
+  const pwaState = await evaluate(`Promise.all([navigator.serviceWorker.ready,caches.keys()]).then(async ([registration,names])=>({active:Boolean(registration.active),names,urls:(await Promise.all(names.map(async name=>(await (await caches.open(name)).keys()).map(request=>request.url)))).flat()}))`)
+  const serviceWorkerActive = pwaState.active
+  const cachedIndexUrl = pwaState.urls.find((url) => new URL(url).pathname.endsWith('/index.html'))
+  if (!serviceWorkerActive || !cachedIndexUrl) throw new Error(`PWA worker or offline cache is not ready: ${JSON.stringify(pwaState)}`)
   await send('Network.emulateNetworkConditions', { offline: true, latency: 0, downloadThroughput: 0, uploadThroughput: 0 })
-  const offlineHtml = await evaluate(`caches.keys().then(async names=>{for(const name of names){const cache=await caches.open(name);for(const request of await cache.keys()){if(new URL(request.url).pathname.endsWith('/index.html'))return (await cache.match(request))?.text()}}})`)
+  const offlineHtml = await evaluate(`caches.match(${JSON.stringify(cachedIndexUrl)}).then(response=>response?.text())`)
   if (!offlineHtml?.includes('id="root"')) throw new Error('offline application shell is unavailable')
   const report = {
     url: base.href,
