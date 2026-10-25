@@ -48,3 +48,16 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
+
+  verify:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Verify the deployed public beta
+        env:
+          CHROME_PATH: /usr/bin/google-chrome
+        run: node scripts/verify-public-beta.mjs https://msqaisfx.github.io/qr-studio-pro/
