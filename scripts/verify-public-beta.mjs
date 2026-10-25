@@ -102,11 +102,11 @@ try {
   }
   if (!downloaded || (await stat(`${downloads}/${downloaded}`)).size < 1000) throw new Error('public PNG export failed')
   await evaluate(`Promise.race([navigator.serviceWorker.ready.then(()=>true),new Promise((_,reject)=>setTimeout(()=>reject(new Error('service worker ready timeout')),20000))])`)
-  const serviceWorkerActive = await evaluate(`navigator.serviceWorker.getRegistration().then(registration=>registration?.active?.state==='activated')`)
-  const cacheReady = await evaluate(`caches.match(${JSON.stringify(new URL('index.html', base).href)}).then(response=>Boolean(response))`)
+  const serviceWorkerActive = await evaluate(`navigator.serviceWorker.ready.then(registration=>Boolean(registration.active))`)
+  const cacheReady = await evaluate(`caches.keys().then(async names=>{for(const name of names){const cache=await caches.open(name);const keys=await cache.keys();if(keys.some(request=>new URL(request.url).pathname.endsWith('/index.html')))return true}return false})`)
   if (!serviceWorkerActive || !cacheReady) throw new Error('PWA worker or offline cache is not ready')
   await send('Network.emulateNetworkConditions', { offline: true, latency: 0, downloadThroughput: 0, uploadThroughput: 0 })
-  const offlineHtml = await evaluate(`caches.match(${JSON.stringify(new URL('index.html', base).href)}).then(response=>response?.text())`)
+  const offlineHtml = await evaluate(`caches.keys().then(async names=>{for(const name of names){const cache=await caches.open(name);for(const request of await cache.keys()){if(new URL(request.url).pathname.endsWith('/index.html'))return (await cache.match(request))?.text()}}})`)
   if (!offlineHtml?.includes('id="root"')) throw new Error('offline application shell is unavailable')
   const report = {
     url: base.href,
