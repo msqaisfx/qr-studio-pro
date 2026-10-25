@@ -1,0 +1,42 @@
+{
+  "generatedAt": "2026-10-25T18:09:06.169Z",
+  "decodePassed": 4,
+  "decodeFailed": 0,
+  "responsiveWidths": [
+    375,
+    768,
+    1280,
+    1920
+  ],
+  "runtimeErrors": [],
+  "results": [
+    {
+      "name": "square",
+      "width": 256,
+      "decoded": true,
+      "logoPixels": 29,
+      "quietZonePixels": 29
+    },
+    {
+      "name": "circle",
+      "width": 512,
+      "decoded": true,
+      "logoPixels": 122,
+      "quietZonePixels": 58
+    },
+    {
+      "name": "rounded",
+      "width": 1024,
+      "decoded": true,
+      "logoPixels": 526,
+      "quietZonePixels": 116
+    },
+    {
+      "name": "arabic",
+      "width": 2048,
+      "decoded": true,
+      "logoPixels": 2233,
+      "quietZonePixels": 232
+    }
+  ]
+}

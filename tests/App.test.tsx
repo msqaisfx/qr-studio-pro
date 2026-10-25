@@ -60,8 +60,16 @@ describe('QR Studio Pro', () => {
 
   it('keeps future studio tools explicitly unavailable', () => {
     renderApp()
-    expect(screen.getByRole('button', { name: 'الشعار' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'الإطارات' })).toBeDisabled()
     expect(screen.getAllByText('قريبًا').length).toBeGreaterThan(0)
+  })
+
+  it('opens the accessible local logo uploader', async () => {
+    const user = userEvent.setup()
+    renderApp()
+    await user.click(screen.getByRole('button', { name: 'فتح تخصيص الشعار' }))
+    expect(screen.getByRole('heading', { name: 'الشعار الذكي' })).toBeInTheDocument()
+    expect(screen.getByText(/PNG أو JPEG أو WebP/)).toBeInTheDocument()
   })
 
   it('opens Colors and applies a real preset', async () => {

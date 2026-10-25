@@ -1,18 +1,21 @@
 import { useEffect, useRef, useState } from 'react'
 import QRCodeStyling from 'qr-code-styling'
+import jsQR from 'jsqr'
 import { useApp } from '../../app/appContext'
 import { getContentKind } from '../../utils/content'
 import { Icons } from '../../components/icons'
-import type { QrDesignSettings } from '../../types/qr'
+import type { LogoGuardState, QrDesignSettings } from '../../types/qr'
+import { encodeQrData } from './encoding'
 import { prepareQrEngine } from './qrEngine'
 import { QR_SIZE } from './qrOptions'
 
 interface QRPreviewProps {
   value: string
   settings: QrDesignSettings
+  onLogoGuardChange: (state: LogoGuardState) => void
 }
 
-export function QRPreview({ value, settings }: QRPreviewProps) {
+export function QRPreview({ value, settings, onLogoGuardChange }: QRPreviewProps) {
   const { t } = useApp()
   const containerRef = useRef<HTMLDivElement>(null)
   const qrRef = useRef<QRCodeStyling | null>(null)
@@ -43,6 +46,27 @@ export function QRPreview({ value, settings }: QRPreviewProps) {
       queueMicrotask(() => setError(t('generationError')))
     }
   }, [normalizedValue, settings, t])
+
+  useEffect(() => {
+    if (!settings.logo.enabled || !settings.logo.renderedDataUrl || !normalizedValue) { onLogoGuardChange('idle'); return }
+    let cancelled = false
+    const timer = window.setTimeout(async () => {
+      onLogoGuardChange('checking')
+      try {
+        const { engine } = prepareQrEngine(normalizedValue, settings, 512)
+        const raw = await engine.getRawData('png')
+        if (!(raw instanceof Blob)) throw new Error('missing-png')
+        const bitmap = await createImageBitmap(raw)
+        const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height
+        const context = canvas.getContext('2d'); if (!context) throw new Error('missing-context')
+        context.drawImage(bitmap, 0, 0); bitmap.close()
+        const pixels = context.getImageData(0, 0, canvas.width, canvas.height)
+        const decoded = jsQR(pixels.data, pixels.width, pixels.height, { inversionAttempts: 'attemptBoth' })
+        if (!cancelled) onLogoGuardChange(decoded?.data === encodeQrData(normalizedValue) || decoded?.data === normalizedValue ? 'readable' : 'unreadable')
+      } catch { if (!cancelled) onLogoGuardChange('error') }
+    }, 350)
+    return () => { cancelled = true; window.clearTimeout(timer) }
+  }, [normalizedValue, settings, onLogoGuardChange])
 
   async function downloadQr() {
     if (!qrRef.current || !normalizedValue) return

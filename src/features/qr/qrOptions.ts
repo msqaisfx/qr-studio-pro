@@ -16,5 +16,6 @@ export function createQrOptions(data: string, settings?: QrDesignSettings, size 
     cornersSquareOptions: { ...toQrColorOptions(settings?.cornerSquareColor ?? { mode: 'solid', solid: '#0b8f63', stops: [], rotation: 0 }), type: settings?.cornerSquareStyle ?? 'extra-rounded' },
     cornersDotOptions: { ...toQrColorOptions(settings?.cornerDotColor ?? { mode: 'solid', solid: '#07110f', stops: [], rotation: 0 }), type: settings?.cornerDotStyle ?? 'dot' },
     backgroundOptions: { color: settings?.background.transparent ? 'rgba(255,255,255,0)' : (settings?.background.color ?? '#ffffff') },
+    ...(settings?.logo.enabled && settings.logo.renderedDataUrl ? { image: settings.logo.renderedDataUrl, imageOptions: { hideBackgroundDots: true, imageSize: settings.logo.size, margin: 0, saveAsBlob: true } } : {}),
   }
 }

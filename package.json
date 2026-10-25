@@ -11,6 +11,7 @@
     "test:watch": "vitest",
     "verify:phase03": "node scripts/verify-phase03.mjs",
     "verify:phase04": "node scripts/verify-phase04.mjs",
+    "verify:phase05": "node scripts/verify-phase05.mjs",
     "typecheck": "tsc -b --pretty false"
   },
   "dependencies": {
@@ -18,6 +19,7 @@
     "@fontsource-variable/noto-sans-arabic": "^5.3.0",
     "@tailwindcss/vite": "4.3.3",
     "qr-code-styling": "1.9.2",
+    "jsqr": "^1.4.0",
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "tailwindcss": "4.3.3"
@@ -37,7 +39,6 @@
     "eslint-plugin-react-refresh": "0.5.7",
     "globals": "17.13.0",
     "jsdom": "30.1.3",
-    "jsqr": "^1.4.0",
     "pngjs": "^7.0.0",
     "typescript": "6.0.2",
     "typescript-eslint": "8.72.0",
