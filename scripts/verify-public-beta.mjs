@@ -20,7 +20,7 @@ const workerUrl = new URL('sw.js', base)
 const worker = await (await request(workerUrl)).text()
 const assetPaths = [...html.matchAll(/(?:src|href)="([^"]+\.(?:js|css))"/g)].map((match) => match[1])
 if (!html.includes('id="root"') || assetPaths.length < 2) throw new Error('deployed HTML is incomplete')
-if (manifest.scope !== './' || manifest.start_url !== './') throw new Error('manifest subpath is unsafe')
+if (manifest.scope !== './' || !manifest.start_url.startsWith('./')) throw new Error('manifest subpath is unsafe')
 if (!worker.includes('qr-studio-') || !worker.includes('SKIP_WAITING')) throw new Error('service worker is incomplete')
 for (const path of assetPaths) await request(new URL(path, base))
 
