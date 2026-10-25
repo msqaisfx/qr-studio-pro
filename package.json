@@ -1,7 +1,17 @@
 {
   "name": "qr-studio-pro",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.9.0-beta.1",
+  "description": "Professional local-first open-source QR code designer",
+  "license": "MIT",
+  "homepage": "https://msqaisfx.github.io/qr-studio-pro/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/msqaisfx/qr-studio-pro.git"
+  },
+  "bugs": {
+    "url": "https://github.com/msqaisfx/qr-studio-pro/issues"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -52,5 +62,9 @@
     "vite": "8.3.5",
     "vitest": "5.0.5"
   },
-  "packageManager": "pnpm@11.25.0"
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=24 <25",
+    "pnpm": "11.25.0"
+  }
 }

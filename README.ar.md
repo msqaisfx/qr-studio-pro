@@ -2,7 +2,9 @@
 
 مصمم رموز QR احترافي ومفتوح المصدر، يركز على الخصوصية وتجربة استخدام نظيفة.
 
-> مرشح جاهزية الإصدار — المرحلة 11 — الإصدار 0.1.0
+> نسخة تجريبية عامة — الإصدار 0.9.0-beta.1
+
+[التطبيق](https://msqaisfx.github.io/qr-studio-pro/) · [المستودع](https://github.com/msqaisfx/qr-studio-pro) · [الإبلاغ عن مشكلة](https://github.com/msqaisfx/qr-studio-pro/issues)
 
 ## المزايا
 
@@ -31,10 +33,10 @@
 
 ## التشغيل المحلي
 
-المتطلبات: Node.js LTS ومدير حزم متوافق (يستخدم المستودع pnpm).
+المتطلبات: Node.js 24 LTS وpnpm 11.25.0.
 
 ```bash
-pnpm install
+pnpm install --frozen-lockfile
 pnpm dev
 ```
 
@@ -53,6 +55,7 @@ pnpm verify:phase07
 pnpm verify:phase08
 pnpm verify:phase09
 pnpm verify:phase10
+pnpm verify:phase11
 ```
 
 ## نطاق المرحلة
@@ -61,10 +64,10 @@ pnpm verify:phase10
 
 ## المساهمة والأمان
 
-راجع [CONTRIBUTING.md](CONTRIBUTING.md) و[SECURITY.md](SECURITY.md).
+راجع [CONTRIBUTING.md](CONTRIBUTING.md) و[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) و[SECURITY.md](SECURITY.md) و[PRIVACY.md](PRIVACY.md) و[CHANGELOG.md](CHANGELOG.md) و[THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md) و[RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md). توجد تعليمات إعداد GitHub والاستضافة في [GITHUB_SETUP.md](GITHUB_SETUP.md) و[DEPLOYMENT.md](DEPLOYMENT.md) و[CUSTOM_DOMAIN.md](CUSTOM_DOMAIN.md).
 
 ## الترخيص
 
-MIT. تُرك اسم صاحب حقوق النشر بانتظار التأكيد في [LICENSE](LICENSE).
+MIT © 2026 Mohammed Qais Abdulghani — محمد قيس عبد الغني. راجع [LICENSE](LICENSE).
 
 English documentation: [README.md](README.md)

@@ -2,7 +2,9 @@
 
 Professional, open-source QR code designer focused on privacy and a clean editing experience.
 
-> Phase 11 release-readiness candidate — version 0.1.0
+> Public Beta — version 0.9.0-beta.1
+
+[Live app](https://msqaisfx.github.io/qr-studio-pro/) · [Repository](https://github.com/msqaisfx/qr-studio-pro) · [Report an issue](https://github.com/msqaisfx/qr-studio-pro/issues)
 
 ## Features
 
@@ -31,10 +33,10 @@ Professional, open-source QR code designer focused on privacy and a clean editin
 
 ## Local development
 
-Requirements: Node.js LTS and a compatible package manager (pnpm is used by this repository).
+Requirements: Node.js 24 LTS and pnpm 11.25.0.
 
 ```bash
-pnpm install
+pnpm install --frozen-lockfile
 pnpm dev
 ```
 
@@ -53,6 +55,7 @@ pnpm verify:phase07
 pnpm verify:phase08
 pnpm verify:phase09
 pnpm verify:phase10
+pnpm verify:phase11
 ```
 
 ## Scope
@@ -61,10 +64,10 @@ This version intentionally has no backend, server database, accounts, analytics,
 
 ## Contributing and security
 
-See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), [PRIVACY.md](PRIVACY.md), [CHANGELOG.md](CHANGELOG.md), and the [GitHub Pages preparation guide](docs/GITHUB_PAGES.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md), [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md), [SECURITY.md](SECURITY.md), [PRIVACY.md](PRIVACY.md), [CHANGELOG.md](CHANGELOG.md), [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md), and [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md). Repository and hosting preparation are documented in [GITHUB_SETUP.md](GITHUB_SETUP.md), [DEPLOYMENT.md](DEPLOYMENT.md), and [CUSTOM_DOMAIN.md](CUSTOM_DOMAIN.md).
 
 ## License
 
-MIT. The copyright holder is intentionally marked for confirmation in [LICENSE](LICENSE).
+MIT © 2026 Mohammed Qais Abdulghani. See [LICENSE](LICENSE).
 
 Arabic documentation: [README.ar.md](README.ar.md)
