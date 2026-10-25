@@ -87,6 +87,17 @@ try {
   await waitFor(`document.readyState==='complete' && Boolean(document.querySelector('.app-shell'))`, 'application shell')
   const initial = await evaluate(`({lang:document.documentElement.lang,dir:document.documentElement.dir,title:document.title})`)
   if (initial.lang !== 'ar' || initial.dir !== 'rtl' || !initial.title.includes('QR Studio Pro')) throw new Error('Arabic RTL defaults are incorrect')
+  await evaluate(`navigator.serviceWorker.register(new URL('sw.js',location.href),{scope:new URL('./',location.href).pathname}).then(()=>true)`)
+  let pwaState
+  for (let index = 0; index < 200; index += 1) {
+    pwaState = await evaluate(`Promise.all([navigator.serviceWorker.getRegistrations(),caches.keys()]).then(async ([registrations,names])=>({active:registrations.some(registration=>Boolean(registration.active)),registrations:registrations.map(registration=>({scope:registration.scope,active:registration.active?.state,installing:registration.installing?.state,waiting:registration.waiting?.state})),names,urls:(await Promise.all(names.map(async name=>(await (await caches.open(name)).keys()).map(request=>request.url)))).flat()}))`)
+    if (pwaState.active && pwaState.urls.some((url) => new URL(url).pathname.endsWith('/index.html'))) break
+    await sleep(100)
+  }
+  const serviceWorkerActive = pwaState.active
+  const cachedIndexUrl = pwaState.urls.find((url) => new URL(url).pathname.endsWith('/index.html'))
+  if (!serviceWorkerActive || !cachedIndexUrl) throw new Error(`PWA worker or offline cache is not ready: ${JSON.stringify(pwaState)}`)
+  await waitFor(`Boolean(navigator.serviceWorker.controller) && document.readyState==='complete' && Boolean(document.querySelector('.app-shell'))`, 'service worker control')
   await evaluate(`(()=>{const e=document.querySelector('#content-url');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(e,'https://example.com/public-beta');e.dispatchEvent(new Event('input',{bubbles:true}))})()`)
   await waitFor(`Boolean(document.querySelector('.qr-canvas canvas,.qr-canvas svg'))`, 'QR preview')
   await evaluate(`document.querySelector('.language-button').click()`)
@@ -107,16 +118,6 @@ try {
     await sleep(100)
   }
   if (!downloaded || (await stat(`${downloads}/${downloaded}`)).size < 1000) throw new Error('public PNG export failed')
-  await evaluate(`navigator.serviceWorker.register(new URL('sw.js',location.href),{scope:new URL('./',location.href).pathname}).then(()=>true)`)
-  let pwaState
-  for (let index = 0; index < 200; index += 1) {
-    pwaState = await evaluate(`Promise.all([navigator.serviceWorker.getRegistrations(),caches.keys()]).then(async ([registrations,names])=>({active:registrations.some(registration=>Boolean(registration.active)),registrations:registrations.map(registration=>({scope:registration.scope,active:registration.active?.state,installing:registration.installing?.state,waiting:registration.waiting?.state})),names,urls:(await Promise.all(names.map(async name=>(await (await caches.open(name)).keys()).map(request=>request.url)))).flat()}))`)
-    if (pwaState.active && pwaState.urls.some((url) => new URL(url).pathname.endsWith('/index.html'))) break
-    await sleep(100)
-  }
-  const serviceWorkerActive = pwaState.active
-  const cachedIndexUrl = pwaState.urls.find((url) => new URL(url).pathname.endsWith('/index.html'))
-  if (!serviceWorkerActive || !cachedIndexUrl) throw new Error(`PWA worker or offline cache is not ready: ${JSON.stringify(pwaState)}`)
   await send('Network.emulateNetworkConditions', { offline: true, latency: 0, downloadThroughput: 0, uploadThroughput: 0 })
   const offlineHtml = await evaluate(`caches.match(${JSON.stringify(cachedIndexUrl)}).then(response=>response?.text())`)
   if (!offlineHtml?.includes('id="root"')) throw new Error('offline application shell is unavailable')
