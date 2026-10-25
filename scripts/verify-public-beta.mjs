@@ -63,7 +63,13 @@ const send = (method, params = {}) => new Promise((resolve, reject) => {
   pending.set(messageId, { resolve, reject })
   socket.send(JSON.stringify({ id: messageId, method, params }))
 })
-const evaluate = async (expression) => (await send('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true })).result.value
+const evaluate = async (expression) => {
+  const response = await send('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true })
+  if (response.exceptionDetails) {
+    throw new Error(response.exceptionDetails.exception?.description ?? response.exceptionDetails.text)
+  }
+  return response.result.value
+}
 const waitFor = async (expression, label) => {
   for (let index = 0; index < 200; index += 1) {
     if (await evaluate(expression)) return
@@ -101,8 +107,12 @@ try {
     await sleep(100)
   }
   if (!downloaded || (await stat(`${downloads}/${downloaded}`)).size < 1000) throw new Error('public PNG export failed')
-  await evaluate(`Promise.race([navigator.serviceWorker.ready.then(()=>true),new Promise((_,reject)=>setTimeout(()=>reject(new Error('service worker ready timeout')),20000))])`)
-  const pwaState = await evaluate(`Promise.all([navigator.serviceWorker.ready,caches.keys()]).then(async ([registration,names])=>({active:Boolean(registration.active),names,urls:(await Promise.all(names.map(async name=>(await (await caches.open(name)).keys()).map(request=>request.url)))).flat()}))`)
+  let pwaState
+  for (let index = 0; index < 200; index += 1) {
+    pwaState = await evaluate(`Promise.all([navigator.serviceWorker.getRegistrations(),caches.keys()]).then(async ([registrations,names])=>({active:registrations.some(registration=>Boolean(registration.active)),registrations:registrations.map(registration=>({scope:registration.scope,active:registration.active?.state,installing:registration.installing?.state,waiting:registration.waiting?.state})),names,urls:(await Promise.all(names.map(async name=>(await (await caches.open(name)).keys()).map(request=>request.url)))).flat()}))`)
+    if (pwaState.active && pwaState.urls.some((url) => new URL(url).pathname.endsWith('/index.html'))) break
+    await sleep(100)
+  }
   const serviceWorkerActive = pwaState.active
   const cachedIndexUrl = pwaState.urls.find((url) => new URL(url).pathname.endsWith('/index.html'))
   if (!serviceWorkerActive || !cachedIndexUrl) throw new Error(`PWA worker or offline cache is not ready: ${JSON.stringify(pwaState)}`)
