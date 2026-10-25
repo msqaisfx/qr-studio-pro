@@ -107,7 +107,7 @@ try {
     await sleep(100)
   }
   if (!downloaded || (await stat(`${downloads}/${downloaded}`)).size < 1000) throw new Error('public PNG export failed')
-  await evaluate(`navigator.serviceWorker.register(new URL('sw.js',location.href),{scope:new URL('./',location.href).pathname}).then(registration=>registration.update()).then(()=>true)`)
+  await evaluate(`navigator.serviceWorker.register(new URL('sw.js',location.href),{scope:new URL('./',location.href).pathname}).then(()=>true)`)
   let pwaState
   for (let index = 0; index < 200; index += 1) {
     pwaState = await evaluate(`Promise.all([navigator.serviceWorker.getRegistrations(),caches.keys()]).then(async ([registrations,names])=>({active:registrations.some(registration=>Boolean(registration.active)),registrations:registrations.map(registration=>({scope:registration.scope,active:registration.active?.state,installing:registration.installing?.state,waiting:registration.waiting?.state})),names,urls:(await Promise.all(names.map(async name=>(await (await caches.open(name)).keys()).map(request=>request.url)))).flat()}))`)
