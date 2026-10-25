@@ -113,4 +113,13 @@ describe('QR Studio Pro', () => {
     expect(screen.getByRole('heading', { name: 'التصدير الاحترافي' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'PNG' })).toHaveAttribute('aria-pressed', 'true')
   })
+
+  it('opens the accessible Scan Guard report without applying fixes', async () => {
+    const user = userEvent.setup()
+    renderApp()
+    await user.click(screen.getByRole('button', { name: 'فتح تقرير جودة QR' }))
+    expect(screen.getByRole('heading', { name: 'حارس قراءة QR' })).toBeInTheDocument()
+    expect(screen.getByText('لا تُطبق الاقتراحات تلقائيًا مطلقًا.')).toBeInTheDocument()
+    expect(screen.getAllByText('غير معروف').length).toBeGreaterThan(0)
+  })
 })

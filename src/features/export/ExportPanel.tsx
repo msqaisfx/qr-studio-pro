@@ -4,11 +4,11 @@ import { useApp } from '../../app/appContext'
 import { Icons } from '../../components/icons'
 import type { QrDesignSettings } from '../../types/qr'
 import { prepareQrEngine } from '../qr/qrEngine'
-import { createExportFile, downloadExportFile } from './exportEngine'
+import { createExportFile, downloadExportFile, resolveExportSettings } from './exportEngine'
 import { validateExportFile } from './fileValidation'
 import { sanitizeFilename } from './filename'
-import { decodeExportBlob } from './scanValidation'
 import { defaultExportOptions, type ExportFormat, type ExportOptions } from './exportTypes'
+import { runQualityGuard } from '../quality/qualityRunner'
 
 const formats: ExportFormat[] = ['png', 'svg', 'webp', 'jpeg', 'pdf']
 const resolutions = [256, 512, 1024, 2048, 4096] as const
@@ -16,7 +16,7 @@ const resolutions = [256, 512, 1024, 2048, 4096] as const
 export function ExportPanel({ payload, settings }: { payload: string; settings: QrDesignSettings }) {
   const { t } = useApp()
   const [options, setOptions] = useState<ExportOptions>({ ...defaultExportOptions, resolution: settings.exportSize })
-  const [state, setState] = useState<'idle' | 'working' | 'valid' | 'unsafe' | 'error'>('idle')
+  const [state, setState] = useState<'idle' | 'working' | 'valid' | 'warning' | 'unsafe' | 'unknown' | 'error'>('idle')
   const previewRef = useRef<HTMLDivElement>(null)
   const engineRef = useRef<QRCodeStyling | null>(null)
   const safeName = useMemo(() => sanitizeFilename(options.filename, options.format), [options.filename, options.format])
@@ -44,9 +44,10 @@ export function ExportPanel({ payload, settings }: { payload: string; settings: 
     try {
       const file = await createExportFile(payload, settings, options)
       await validateExportFile(file, options.format)
-      const readable = await decodeExportBlob(file.scanSource, payload)
-      if (!readable) { setState('unsafe'); return }
-      downloadExportFile(file); setState('valid')
+      const report = await runQualityGuard(payload, resolveExportSettings(settings, options), file.width ?? options.resolution, true, file.scanSource)
+      if (report.overall === 'fail') { setState('unsafe'); return }
+      if (report.overall === 'unknown') { setState('unknown'); return }
+      downloadExportFile(file); setState(report.overall === 'warning' ? 'warning' : 'valid')
     } catch { setState('error') }
   }
 
@@ -63,7 +64,7 @@ export function ExportPanel({ payload, settings }: { payload: string; settings: 
     <div className="export-preview"><div ref={previewRef} /><span><strong>{t('exportPreview')}</strong><small>{options.format.toUpperCase()} · {options.format === 'svg' ? t('vectorFormat') : `${options.resolution}px`} · {safeName}</small></span></div>
     {settings.logo.enabled && options.format === 'svg' && <p className="export-note">{t('svgRasterLogoNote')}</p>}
     {options.format === 'pdf' && <p className="export-note">{t('pdfRasterNote')}</p>}
-    <div className={`export-validation ${state}`} role="status" aria-live="polite">{state === 'working' ? t('exportWorking') : state === 'valid' ? t('exportValidated') : state === 'unsafe' ? t('exportUnsafe') : state === 'error' ? t('exportFailed') : t('exportValidationReady')}</div>
+    <div className={`export-validation ${state}`} role="status" aria-live="polite">{state === 'working' ? t('exportWorking') : state === 'valid' ? t('exportValidated') : state === 'warning' ? t('exportWarningAllowed') : state === 'unsafe' ? t('exportUnsafe') : state === 'unknown' ? t('exportUnknownBlocked') : state === 'error' ? t('exportFailed') : t('exportValidationReady')}</div>
     <button className="download-button export-download" type="button" disabled={!payload || state === 'working'} onClick={exportFile}><Icons.download />{state === 'working' ? t('exportWorking') : t('downloadFile')}</button>
     <p className="field-hint">{t('exportPrivacy')}</p>
   </section>

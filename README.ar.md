@@ -2,7 +2,7 @@
 
 مصمم رموز QR احترافي ومفتوح المصدر، يركز على الخصوصية وتجربة استخدام نظيفة.
 
-> المرحلة السابعة — الإصدار 0.1.0
+> المرحلة الثامنة — الإصدار 0.1.0
 
 ## المزايا
 
@@ -18,6 +18,8 @@
 - معالجة محلية لشعارات PNG/JPEG/WebP بأشكال وخلفيات وحشوة آمنة وحارس فك قراءة مستقل
 - أحد عشر نوع محتوى بترميز محلي: موقع ونص وWi-Fi وvCard وواتساب وبريد وهاتف وSMS وموقع جغرافي وحدث وعملات رقمية
 - استوديو تصدير موحد بأسماء آمنة ودقات 256–4096 بكسل وSVG وتحكم بالجودة والشفافية وإعدادات صفحات الطباعة
+- حارس قراءة محلي بفك ترميز مستقل وفحص فعلي للمنطقة الهادئة والكثافة والتباين والشعار وأنماط الباحث وصيغة التصدير
+- حالات صريحة PASS وWARNING وFAIL وUNKNOWN مع توصيات استرشادية ومنع التصدير عند الفشل أو تعذر التحقق
 - خطا Inter وNoto Sans Arabic مضمنان محليًا
 - خصوصية محلية: تتم معالجة الإدخال داخل المتصفح فقط
 - فحص TypeScript وESLint واختبارات وحدات وبناء إنتاجي
@@ -43,11 +45,12 @@ pnpm verify:phase04
 pnpm verify:phase05
 pnpm verify:phase06
 pnpm verify:phase07
+pnpm verify:phase08
 ```
 
 ## نطاق المرحلة
 
-لا يتضمن هذا الإصدار Backend أو قاعدة بيانات أو حسابات أو إحصائيات أو دفعًا أو QR ديناميكيًا أو إطارات أو قوالب كاملة. راجع [docs/PHASES.md](docs/PHASES.md) و[docs/EXPORT_ARCHITECTURE.md](docs/EXPORT_ARCHITECTURE.md) و[docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md) و[docs/CONTRAST_GUARD.md](docs/CONTRAST_GUARD.md) و[docs/LOGO_SECURITY.md](docs/LOGO_SECURITY.md).
+لا يتضمن هذا الإصدار Backend أو قاعدة بيانات أو حسابات أو إحصائيات أو دفعًا أو QR ديناميكيًا أو إطارات أو قوالب كاملة. راجع [docs/PHASES.md](docs/PHASES.md) و[docs/SCAN_GUARD.md](docs/SCAN_GUARD.md) و[docs/REAL_DEVICE_TESTING.md](docs/REAL_DEVICE_TESTING.md) و[docs/EXPORT_ARCHITECTURE.md](docs/EXPORT_ARCHITECTURE.md).
 
 ## المساهمة والأمان
 

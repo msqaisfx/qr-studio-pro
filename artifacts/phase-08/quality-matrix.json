@@ -1,0 +1,297 @@
+{
+  "generatedAt": "2026-10-25T18:54:56.844Z",
+  "cases": [
+    {
+      "name": "default",
+      "overall": "pass",
+      "checks": {
+        "payload": "pass",
+        "decode": "pass",
+        "contrast": "pass",
+        "quietZone": "pass",
+        "logo": "pass",
+        "finder": "pass",
+        "density": "pass",
+        "format": "pass"
+      }
+    },
+    {
+      "name": "arabic",
+      "overall": "pass",
+      "checks": {
+        "payload": "pass",
+        "decode": "pass",
+        "contrast": "pass",
+        "quietZone": "pass",
+        "logo": "pass",
+        "finder": "pass",
+        "density": "pass",
+        "format": "pass"
+      }
+    },
+    {
+      "name": "gradient",
+      "overall": "pass",
+      "checks": {
+        "payload": "pass",
+        "decode": "pass",
+        "contrast": "pass",
+        "quietZone": "pass",
+        "logo": "pass",
+        "finder": "pass",
+        "density": "pass",
+        "format": "pass"
+      }
+    },
+    {
+      "name": "logo",
+      "overall": "pass",
+      "checks": {
+        "payload": "pass",
+        "decode": "pass",
+        "contrast": "pass",
+        "quietZone": "pass",
+        "logo": "pass",
+        "finder": "pass",
+        "density": "pass",
+        "format": "pass"
+      }
+    },
+    {
+      "name": "large-logo",
+      "overall": "warning",
+      "checks": {
+        "payload": "pass",
+        "decode": "pass",
+        "contrast": "pass",
+        "quietZone": "pass",
+        "logo": "warning",
+        "finder": "pass",
+        "density": "pass",
+        "format": "pass"
+      }
+    },
+    {
+      "name": "transparent",
+      "overall": "unknown",
+      "checks": {
+        "payload": "pass",
+        "decode": "pass",
+        "contrast": "unknown",
+        "quietZone": "pass",
+        "logo": "pass",
+        "finder": "unknown",
+        "density": "pass",
+        "format": "pass"
+      }
+    },
+    {
+      "name": "low-contrast",
+      "overall": "fail",
+      "checks": {
+        "payload": "pass",
+        "decode": "fail",
+        "contrast": "fail",
+        "quietZone": "unknown",
+        "logo": "pass",
+        "finder": "fail",
+        "density": "unknown",
+        "format": "pass"
+      }
+    },
+    {
+      "name": "dense",
+      "overall": "fail",
+      "checks": {
+        "payload": "pass",
+        "decode": "pass",
+        "contrast": "pass",
+        "quietZone": "pass",
+        "logo": "pass",
+        "finder": "pass",
+        "density": "fail",
+        "format": "pass"
+      }
+    }
+  ],
+  "intentionalFailures": [
+    {
+      "name": "large-logo",
+      "overall": "warning",
+      "checks": {
+        "payload": "pass",
+        "decode": "pass",
+        "contrast": "pass",
+        "quietZone": "pass",
+        "logo": "warning",
+        "finder": "pass",
+        "density": "pass",
+        "format": "pass"
+      }
+    },
+    {
+      "name": "transparent",
+      "overall": "unknown",
+      "checks": {
+        "payload": "pass",
+        "decode": "pass",
+        "contrast": "unknown",
+        "quietZone": "pass",
+        "logo": "pass",
+        "finder": "unknown",
+        "density": "pass",
+        "format": "pass"
+      }
+    },
+    {
+      "name": "low-contrast",
+      "overall": "fail",
+      "checks": {
+        "payload": "pass",
+        "decode": "fail",
+        "contrast": "fail",
+        "quietZone": "unknown",
+        "logo": "pass",
+        "finder": "fail",
+        "density": "unknown",
+        "format": "pass"
+      }
+    },
+    {
+      "name": "dense",
+      "overall": "fail",
+      "checks": {
+        "payload": "pass",
+        "decode": "pass",
+        "contrast": "pass",
+        "quietZone": "pass",
+        "logo": "pass",
+        "finder": "pass",
+        "density": "fail",
+        "format": "pass"
+      }
+    }
+  ],
+  "matrix": [
+    {
+      "level": "L",
+      "size": 256,
+      "overall": "pass"
+    },
+    {
+      "level": "L",
+      "size": 512,
+      "overall": "pass"
+    },
+    {
+      "level": "L",
+      "size": 1024,
+      "overall": "pass"
+    },
+    {
+      "level": "L",
+      "size": 2048,
+      "overall": "pass"
+    },
+    {
+      "level": "M",
+      "size": 256,
+      "overall": "pass"
+    },
+    {
+      "level": "M",
+      "size": 512,
+      "overall": "pass"
+    },
+    {
+      "level": "M",
+      "size": 1024,
+      "overall": "pass"
+    },
+    {
+      "level": "M",
+      "size": 2048,
+      "overall": "pass"
+    },
+    {
+      "level": "Q",
+      "size": 256,
+      "overall": "pass"
+    },
+    {
+      "level": "Q",
+      "size": 512,
+      "overall": "pass"
+    },
+    {
+      "level": "Q",
+      "size": 1024,
+      "overall": "pass"
+    },
+    {
+      "level": "Q",
+      "size": 2048,
+      "overall": "pass"
+    },
+    {
+      "level": "H",
+      "size": 256,
+      "overall": "pass"
+    },
+    {
+      "level": "H",
+      "size": 512,
+      "overall": "pass"
+    },
+    {
+      "level": "H",
+      "size": 1024,
+      "overall": "pass"
+    },
+    {
+      "level": "H",
+      "size": 2048,
+      "overall": "pass"
+    }
+  ],
+  "exports": [
+    {
+      "format": "png",
+      "bytes": 571693,
+      "elapsedMs": 1299,
+      "decoded": true
+    },
+    {
+      "format": "svg",
+      "bytes": 28480,
+      "elapsedMs": 843,
+      "decoded": true
+    },
+    {
+      "format": "webp",
+      "bytes": 36924,
+      "elapsedMs": 303,
+      "decoded": true
+    },
+    {
+      "format": "jpeg",
+      "bytes": 95628,
+      "elapsedMs": 285,
+      "decoded": true
+    },
+    {
+      "format": "pdf",
+      "bytes": 112588,
+      "elapsedMs": 708,
+      "decoded": true
+    }
+  ],
+  "unknownExportBlocked": true,
+  "responsiveWidths": [
+    375,
+    768,
+    1280,
+    1920
+  ],
+  "runtimeErrors": []
+}

@@ -6,7 +6,7 @@ import { exportMimeTypes, type ExportFile, type ExportOptions } from './exportTy
 const mmToPt = (mm: number) => mm * 72 / 25.4
 const pageSizes = { a4: [595.28, 841.89], letter: [612, 792], square: [612, 612] } as const
 
-function settingsWithBackground(settings: QrDesignSettings, options: ExportOptions): QrDesignSettings {
+export function resolveExportSettings(settings: QrDesignSettings, options: ExportOptions): QrDesignSettings {
   if (options.backgroundMode === 'design') return settings
   if (options.backgroundMode === 'transparent') return { ...settings, background: { ...settings.background, transparent: true } }
   return { ...settings, background: { color: options.backgroundMode === 'white' ? '#ffffff' : options.backgroundColor, transparent: false } }
@@ -71,7 +71,7 @@ async function createPdf(png: Blob, options: ExportOptions): Promise<Blob> {
 export async function createExportFile(payload: string, settings: QrDesignSettings, options: ExportOptions): Promise<ExportFile> {
   if (!payload.trim()) throw new Error('empty-payload')
   await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
-  const effective = settingsWithBackground(settings, options)
+  const effective = resolveExportSettings(settings, options)
   const renderSize = options.format === 'pdf' ? Math.max(2048, options.resolution) : options.resolution
   const { engine } = prepareQrEngine(payload, effective, renderSize)
   const filename = sanitizeFilename(options.filename, options.format)
@@ -82,7 +82,7 @@ export async function createExportFile(payload: string, settings: QrDesignSettin
   }
   const png = await asBlob(await engine.getRawData('png'), exportMimeTypes.png)
   if (options.format === 'png') return { blob: png, scanSource: png, filename, mimeType: exportMimeTypes.png, width: renderSize, height: renderSize }
-  if (options.format === 'pdf') return { blob: await createPdf(png, options), scanSource: png, filename, mimeType: exportMimeTypes.pdf, note: 'raster-pdf' }
+  if (options.format === 'pdf') return { blob: await createPdf(png, options), scanSource: png, filename, mimeType: exportMimeTypes.pdf, width: renderSize, height: renderSize, note: 'raster-pdf' }
 
   const flatten = options.format === 'jpeg'
     ? (options.backgroundMode === 'custom' ? options.backgroundColor : options.backgroundMode === 'design' && !settings.background.transparent ? settings.background.color : '#ffffff')

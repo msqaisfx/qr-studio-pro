@@ -8,6 +8,7 @@ import { ShapesPanel } from '../features/qr/ShapesPanel'
 import { ColorsPanel } from '../features/qr/ColorsPanel'
 import { LogoPanel } from '../features/qr/LogoPanel'
 import { ExportPanel } from '../features/export/ExportPanel'
+import { QualityPanel } from '../features/quality/QualityPanel'
 import { defaultQrDesignSettings, type LogoGuardState, type QrDesignSettings } from '../types/qr'
 import { useApp } from './appContext'
 import { buildPayload, initialContentWorkspace, type ContentWorkspace } from '../features/content/contentTypes'
@@ -24,10 +25,10 @@ export function App() {
     <div className="app-shell" id="top">
       <Header />
       <main className="studio-main">
-        <div className="studio-intro"><div><span>QR STUDIO / 07</span><h2>{t('tagline')}</h2><p>{t('intro')}</p></div></div>
+        <div className="studio-intro"><div><span>QR STUDIO / 08</span><h2>{t('tagline')}</h2><p>{t('intro')}</p></div></div>
         <div className="studio-grid">
           <ToolSidebar activeTool={activeTool} onSelect={setActiveTool} />
-          <section className="editor-column">{activeTool === 'content' ? <ContentEditor state={contentState} onChange={setContentState} level={settings.errorCorrectionLevel} /> : activeTool === 'shapes' ? <ShapesPanel settings={settings} onChange={setSettings} /> : activeTool === 'colors' ? <ColorsPanel settings={settings} onChange={setSettings} /> : activeTool === 'logo' ? <LogoPanel settings={settings} onChange={setSettings} guard={logoGuard} /> : <ExportPanel payload={content} settings={settings} />}</section>
+          <section className="editor-column">{activeTool === 'content' ? <ContentEditor state={contentState} onChange={setContentState} level={settings.errorCorrectionLevel} /> : activeTool === 'shapes' ? <ShapesPanel settings={settings} onChange={setSettings} /> : activeTool === 'colors' ? <ColorsPanel settings={settings} onChange={setSettings} /> : activeTool === 'logo' ? <LogoPanel settings={settings} onChange={setSettings} guard={logoGuard} /> : activeTool === 'quality' ? <QualityPanel payload={content} settings={settings} /> : <ExportPanel payload={content} settings={settings} />}</section>
           <QRPreview value={content} settings={settings} onLogoGuardChange={setLogoGuard} onOpenExport={() => setActiveTool('export')} />
           <InspectorPanel value={content} settings={settings} contentType={contentState.activeType} />
         </div>
