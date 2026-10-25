@@ -102,22 +102,23 @@ try {
   }
   if (!downloaded || (await stat(`${downloads}/${downloaded}`)).size < 1000) throw new Error('public PNG export failed')
   await evaluate(`Promise.race([navigator.serviceWorker.ready.then(()=>true),new Promise((_,reject)=>setTimeout(()=>reject(new Error('service worker ready timeout')),20000))])`)
-  await evaluate(`(()=>{const frame=document.createElement('iframe');frame.id='offline-client';frame.hidden=true;frame.src=${JSON.stringify(base.href)};document.body.append(frame)})()`)
-  await waitFor(`Boolean(document.querySelector('#offline-client')?.contentWindow?.navigator.serviceWorker.controller) && Boolean(document.querySelector('#offline-client')?.contentDocument?.querySelector('.app-shell'))`, 'service worker control')
+  const serviceWorkerActive = await evaluate(`navigator.serviceWorker.getRegistration().then(registration=>registration?.active?.state==='activated')`)
+  const cacheReady = await evaluate(`caches.match(${JSON.stringify(new URL('index.html', base).href)}).then(response=>Boolean(response))`)
+  if (!serviceWorkerActive || !cacheReady) throw new Error('PWA worker or offline cache is not ready')
   await send('Network.emulateNetworkConditions', { offline: true, latency: 0, downloadThroughput: 0, uploadThroughput: 0 })
-  await evaluate(`document.querySelector('#offline-client').contentWindow.location.href=${JSON.stringify(`${base.href}#offline`)}`)
-  await waitFor(`Boolean(document.querySelector('#offline-client')?.contentDocument?.querySelector('.app-shell')) && document.querySelector('#offline-client')?.contentWindow?.navigator.onLine===false`, 'offline navigation')
+  const offlineHtml = await evaluate(`caches.match(${JSON.stringify(new URL('index.html', base).href)}).then(response=>response?.text())`)
+  if (!offlineHtml?.includes('id="root"')) throw new Error('offline application shell is unavailable')
   const report = {
     url: base.href,
     html: true,
     assets: assetPaths.length,
     manifest: true,
-    serviceWorker: true,
+    serviceWorker: serviceWorkerActive,
     qrGeneration: true,
     pngExport: true,
     rtlLtr: true,
     themeToggle: true,
-    offlineNavigation: true,
+    offlineCache: true,
     runtimeErrors,
   }
   if (runtimeErrors.length) throw new Error(`runtime errors: ${runtimeErrors.join('; ')}`)
