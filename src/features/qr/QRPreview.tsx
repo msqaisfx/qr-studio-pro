@@ -13,14 +13,14 @@ interface QRPreviewProps {
   value: string
   settings: QrDesignSettings
   onLogoGuardChange: (state: LogoGuardState) => void
+  onOpenExport: () => void
 }
 
-export function QRPreview({ value, settings, onLogoGuardChange }: QRPreviewProps) {
+export function QRPreview({ value, settings, onLogoGuardChange, onOpenExport }: QRPreviewProps) {
   const { t } = useApp()
   const containerRef = useRef<HTMLDivElement>(null)
   const qrRef = useRef<QRCodeStyling | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [isDownloading, setIsDownloading] = useState(false)
   const [moduleCount, setModuleCount] = useState<number | null>(null)
   const normalizedValue = value.trim()
   const kind = getContentKind(value)
@@ -68,20 +68,6 @@ export function QRPreview({ value, settings, onLogoGuardChange }: QRPreviewProps
     return () => { cancelled = true; window.clearTimeout(timer) }
   }, [normalizedValue, settings, onLogoGuardChange])
 
-  async function downloadQr() {
-    if (!qrRef.current || !normalizedValue) return
-    setIsDownloading(true)
-    setError(null)
-    try {
-      const { engine } = prepareQrEngine(normalizedValue, settings, settings.exportSize)
-      await engine.download({ name: 'qr-studio-pro', extension: 'png' })
-    } catch {
-      setError(t('downloadError'))
-    } finally {
-      setIsDownloading(false)
-    }
-  }
-
   return (
     <section className="preview-panel" aria-labelledby="preview-title">
       <div className="canvas-toolbar">
@@ -103,7 +89,7 @@ export function QRPreview({ value, settings, onLogoGuardChange }: QRPreviewProps
         </div>
         {error && <p className="error-message" role="alert">{error}</p>}
       </div>
-      <div className="canvas-footer"><span className={`generation-status ${normalizedValue && !error ? 'ready' : ''}`}><i />{normalizedValue && !error ? t('ready') : t('emptyContent')}</span><button className="download-button" type="button" onClick={downloadQr} disabled={!normalizedValue || !!error || isDownloading}><Icons.download />{isDownloading ? t('downloading') : t('download')}</button></div>
+      <div className="canvas-footer"><span className={`generation-status ${normalizedValue && !error ? 'ready' : ''}`}><i />{normalizedValue && !error ? t('ready') : t('emptyContent')}</span><button className="download-button" type="button" onClick={onOpenExport} disabled={!normalizedValue || !!error}><Icons.download />{t('openExport')}</button></div>
     </section>
   )
 }

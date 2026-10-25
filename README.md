@@ -2,12 +2,12 @@
 
 Professional, open-source QR code designer focused on privacy and a clean editing experience.
 
-> Phase 06 — version 0.1.0
+> Phase 07 — version 0.1.0
 
 ## Features
 
 - Real QR generation for URLs, Arabic text, and English text
-- Instant preview and PNG export
+- Instant preview and validated PNG, SVG, WebP, JPEG, and PDF export
 - Arabic (default, RTL) and English (LTR)
 - Dark and light themes
 - Professional responsive studio shell with tools, canvas, and inspector
@@ -17,6 +17,7 @@ Professional, open-source QR code designer focused on privacy and a clean editin
 - Nine live color presets and an advisory multi-stop contrast guard
 - Local PNG/JPEG/WebP logo processing with safe shapes, backgrounds, padding, and an independent decode guard
 - Eleven locally encoded QR content types: website, text, Wi-Fi, vCard, WhatsApp, email, phone, SMS, location, event, and crypto
+- A unified export studio with safe filenames, 256–4096 px raster output, SVG, quality controls, transparency, and print-page settings
 - Locally bundled Inter and Noto Sans Arabic variable fonts
 - Local-first: input is processed only in the browser
 - TypeScript, linting, unit tests, and production build checks
@@ -41,11 +42,12 @@ pnpm build
 pnpm verify:phase04
 pnpm verify:phase05
 pnpm verify:phase06
+pnpm verify:phase07
 ```
 
 ## Scope
 
-This version intentionally has no backend, database, accounts, analytics, payments, dynamic QR codes, frames, or full templates. See [docs/PHASES.md](docs/PHASES.md), [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md), [docs/CONTRAST_GUARD.md](docs/CONTRAST_GUARD.md), and [docs/LOGO_SECURITY.md](docs/LOGO_SECURITY.md).
+This version intentionally has no backend, database, accounts, analytics, payments, dynamic QR codes, frames, or full templates. See [docs/PHASES.md](docs/PHASES.md), [docs/EXPORT_ARCHITECTURE.md](docs/EXPORT_ARCHITECTURE.md), [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md), [docs/CONTRAST_GUARD.md](docs/CONTRAST_GUARD.md), and [docs/LOGO_SECURITY.md](docs/LOGO_SECURITY.md).
 
 ## Contributing and security
 

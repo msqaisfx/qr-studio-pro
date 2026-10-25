@@ -1,6 +1,6 @@
 import type { CornerDotType, CornerSquareType, DotType, ErrorCorrectionLevel } from 'qr-code-styling'
 
-export type QrExportSize = 256 | 512 | 1024 | 2048
+export type QrExportSize = 256 | 512 | 1024 | 2048 | 4096
 export type QrColorMode = 'solid' | 'linear' | 'radial'
 
 export interface QrGradientStop {

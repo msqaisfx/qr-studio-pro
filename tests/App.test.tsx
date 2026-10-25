@@ -29,7 +29,7 @@ describe('QR Studio Pro', () => {
   it('shows a clear empty state and disables download', () => {
     renderApp()
     expect(screen.getByText('ابدأ بكتابة محتوى')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /تنزيل PNG/ })).toBeDisabled()
+    expect(screen.getAllByRole('button', { name: 'فتح استوديو التصدير' }).find((button) => button.classList.contains('download-button'))).toBeDisabled()
   })
 
   it('updates the QR preview when content is entered', async () => {
@@ -37,7 +37,7 @@ describe('QR Studio Pro', () => {
     renderApp()
     await user.type(screen.getByRole('textbox', { name: 'رابط الموقع' }), 'https://example.com')
     expect(append).toHaveBeenCalled()
-    expect(screen.getByRole('button', { name: /تنزيل PNG/ })).toBeEnabled()
+    expect(screen.getAllByRole('button', { name: 'فتح استوديو التصدير' }).find((button) => button.classList.contains('download-button'))).toBeEnabled()
   })
 
   it('switches language, direction, and persists the choice', async () => {
@@ -103,11 +103,14 @@ describe('QR Studio Pro', () => {
     expect(screen.getByRole('heading', { name: 'تخصيص الأشكال' })).toBeInTheDocument()
   })
 
-  it('downloads the generated QR as PNG', async () => {
+  it('opens the unified export studio from the preview', async () => {
     const user = userEvent.setup()
     renderApp()
     await user.type(screen.getByRole('textbox', { name: 'رابط الموقع' }), 'https://example.com')
-    await user.click(screen.getByRole('button', { name: /تنزيل PNG/ }))
-    expect(download).toHaveBeenCalledWith({ name: 'qr-studio-pro', extension: 'png' })
+    const previewExport = screen.getAllByRole('button', { name: 'فتح استوديو التصدير' }).find((button) => button.classList.contains('download-button'))
+    expect(previewExport).toBeDefined()
+    await user.click(previewExport!)
+    expect(screen.getByRole('heading', { name: 'التصدير الاحترافي' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'PNG' })).toHaveAttribute('aria-pressed', 'true')
   })
 })

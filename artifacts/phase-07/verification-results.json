@@ -1,0 +1,60 @@
+{
+  "generatedAt": "2026-10-25T18:43:51.076Z",
+  "appUrl": "http://127.0.0.1:5174/",
+  "results": [
+    {
+      "format": "png",
+      "bytes": 4196109,
+      "resolution": 4096,
+      "elapsedMs": 613,
+      "decoded": true
+    },
+    {
+      "format": "svg",
+      "bytes": 127814,
+      "resolution": 1024,
+      "elapsedMs": 105,
+      "decoded": true
+    },
+    {
+      "format": "webp",
+      "bytes": 63808,
+      "resolution": 1024,
+      "elapsedMs": 205,
+      "decoded": true
+    },
+    {
+      "format": "jpeg",
+      "bytes": 136504,
+      "resolution": 1024,
+      "elapsedMs": 107,
+      "decoded": true
+    },
+    {
+      "format": "pdf",
+      "bytes": 409540,
+      "resolution": 1024,
+      "elapsedMs": 511,
+      "decoded": true
+    }
+  ],
+  "transparentPngDecoded": true,
+  "pdf": {
+    "pages": 1,
+    "pageSize": "A4",
+    "qrNature": "high-resolution raster"
+  },
+  "svg": {
+    "vectorQr": true,
+    "rasterLogoEmbedded": true,
+    "externalResources": false,
+    "scripts": false
+  },
+  "responsiveWidths": [
+    375,
+    768,
+    1280,
+    1920
+  ],
+  "runtimeErrors": []
+}
