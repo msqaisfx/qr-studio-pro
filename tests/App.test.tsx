@@ -1,0 +1,84 @@
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { App } from '../src/app/App'
+import { AppProviders } from '../src/app/AppProviders'
+
+const append = vi.fn()
+const download = vi.fn().mockResolvedValue(undefined)
+
+vi.mock('qr-code-styling', () => ({
+  default: class MockQRCodeStyling {
+    _qr = { getModuleCount: () => 29 }
+    append = append
+    download = download
+    update = vi.fn()
+  },
+}))
+
+function renderApp() {
+  return render(<AppProviders><App /></AppProviders>)
+}
+
+describe('QR Studio Pro', () => {
+  beforeEach(() => {
+    append.mockClear()
+    download.mockClear()
+  })
+
+  it('shows a clear empty state and disables download', () => {
+    renderApp()
+    expect(screen.getByText('ابدأ بكتابة محتوى')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /تنزيل PNG/ })).toBeDisabled()
+  })
+
+  it('updates the QR preview when content is entered', async () => {
+    const user = userEvent.setup()
+    renderApp()
+    await user.type(screen.getByRole('textbox', { name: 'الرابط أو النص' }), 'مرحبا')
+    expect(append).toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: /تنزيل PNG/ })).toBeEnabled()
+  })
+
+  it('switches language, direction, and persists the choice', async () => {
+    const user = userEvent.setup()
+    renderApp()
+    await user.click(screen.getByRole('button', { name: 'التبديل إلى الإنجليزية' }))
+    expect(screen.getByText('Design your code. Keep your privacy.')).toBeInTheDocument()
+    expect(document.documentElement).toHaveAttribute('lang', 'en')
+    expect(document.documentElement).toHaveAttribute('dir', 'ltr')
+    expect(localStorage.getItem('qr-studio-pro:language')).toBe('en')
+  })
+
+  it('switches theme immediately and persists it', async () => {
+    const user = userEvent.setup()
+    renderApp()
+    await user.click(screen.getByRole('button', { name: 'الوضع الفاتح' }))
+    expect(document.documentElement).toHaveAttribute('data-theme', 'light')
+    expect(localStorage.getItem('qr-studio-pro:theme')).toBe('light')
+  })
+
+  it('keeps future studio tools explicitly unavailable', () => {
+    renderApp()
+    expect(screen.getByRole('button', { name: 'الألوان' })).toBeDisabled()
+    expect(screen.getAllByText('قريبًا').length).toBeGreaterThan(0)
+  })
+
+  it('opens Shapes and applies a live body pattern selection', async () => {
+    const user = userEvent.setup()
+    renderApp()
+    await user.click(screen.getByRole('button', { name: 'فتح تخصيص الأشكال' }))
+    const dots = screen.getByRole('button', { name: 'نقاط' })
+    await user.click(dots)
+    expect(dots).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('heading', { name: 'تخصيص الأشكال' })).toBeInTheDocument()
+  })
+
+  it('downloads the generated QR as PNG', async () => {
+    const user = userEvent.setup()
+    renderApp()
+    await user.type(screen.getByRole('textbox', { name: 'الرابط أو النص' }), 'https://example.com')
+    await user.click(screen.getByRole('button', { name: /تنزيل PNG/ }))
+    expect(download).toHaveBeenCalledWith({ name: 'qr-studio-pro', extension: 'png' })
+  })
+})
