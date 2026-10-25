@@ -1,6 +1,3 @@
-# Intentionally disabled in Phase 12A. GitHub ignores this file extension.
-# After explicit publishing approval, review DEPLOYMENT.md, rename this file to
-# pages-deploy.yml, and configure GitHub Pages to use GitHub Actions.
 name: Deploy GitHub Pages
 
 on:
