@@ -60,8 +60,29 @@ describe('QR Studio Pro', () => {
 
   it('keeps future studio tools explicitly unavailable', () => {
     renderApp()
-    expect(screen.getByRole('button', { name: 'الألوان' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'الشعار' })).toBeDisabled()
     expect(screen.getAllByText('قريبًا').length).toBeGreaterThan(0)
+  })
+
+  it('opens Colors and applies a real preset', async () => {
+    const user = userEvent.setup()
+    renderApp()
+    await user.click(screen.getByRole('button', { name: 'فتح تخصيص الألوان' }))
+    expect(screen.getByRole('heading', { name: 'الألوان والتدرجات', level: 1 })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'أزرق منتصف الليل' }))
+    expect(screen.getByRole('textbox', { name: 'قيمة HEX' })).toHaveValue('#0b1f3a')
+    await user.click(screen.getByRole('button', { name: 'استعادة الألوان' }))
+    expect(screen.getByRole('textbox', { name: 'قيمة HEX' })).toHaveValue('#07110f')
+  })
+
+  it('edits a multi-stop gradient with an accessible rotation control', async () => {
+    const user = userEvent.setup()
+    renderApp()
+    await user.click(screen.getByRole('button', { name: 'فتح تخصيص الألوان' }))
+    await user.click(screen.getByRole('button', { name: 'تدرج خطي' }))
+    await user.click(screen.getByRole('button', { name: /إضافة نقطة/ }))
+    expect(screen.getAllByRole('textbox')).toHaveLength(4)
+    expect(screen.getByRole('slider', { name: /زاوية التدرج/ })).toBeInTheDocument()
   })
 
   it('opens Shapes and applies a live body pattern selection', async () => {

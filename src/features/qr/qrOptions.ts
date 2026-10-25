@@ -1,5 +1,6 @@
 import type { Options } from 'qr-code-styling'
 import type { QrDesignSettings } from '../../types/qr'
+import { toQrColorOptions } from './colorUtils'
 
 export const QR_SIZE = 300
 
@@ -11,9 +12,9 @@ export function createQrOptions(data: string, settings?: QrDesignSettings, size 
     data,
     margin,
     qrOptions: { errorCorrectionLevel: settings?.errorCorrectionLevel ?? 'M' },
-    dotsOptions: { color: '#07110f', type: settings?.bodyPattern ?? 'rounded' },
-    cornersSquareOptions: { color: '#14b87a', type: settings?.cornerSquareStyle ?? 'extra-rounded' },
-    cornersDotOptions: { color: '#07110f', type: settings?.cornerDotStyle ?? 'dot' },
-    backgroundOptions: { color: '#ffffff' },
+    dotsOptions: { ...toQrColorOptions(settings?.bodyColor ?? { mode: 'solid', solid: '#07110f', stops: [], rotation: 0 }), type: settings?.bodyPattern ?? 'rounded' },
+    cornersSquareOptions: { ...toQrColorOptions(settings?.cornerSquareColor ?? { mode: 'solid', solid: '#0b8f63', stops: [], rotation: 0 }), type: settings?.cornerSquareStyle ?? 'extra-rounded' },
+    cornersDotOptions: { ...toQrColorOptions(settings?.cornerDotColor ?? { mode: 'solid', solid: '#07110f', stops: [], rotation: 0 }), type: settings?.cornerDotStyle ?? 'dot' },
+    backgroundOptions: { color: settings?.background.transparent ? 'rgba(255,255,255,0)' : (settings?.background.color ?? '#ffffff') },
   }
 }

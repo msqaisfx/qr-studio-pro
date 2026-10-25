@@ -10,6 +10,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "verify:phase03": "node scripts/verify-phase03.mjs",
+    "verify:phase04": "node scripts/verify-phase04.mjs",
     "typecheck": "tsc -b --pretty false"
   },
   "dependencies": {

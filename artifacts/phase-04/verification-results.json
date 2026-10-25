@@ -1,0 +1,91 @@
+{
+  "generatedAt": "2026-10-25T17:53:21.511Z",
+  "decodePassed": 7,
+  "decodeFailed": 0,
+  "runtimeErrors": [],
+  "responsiveWidths": [
+    375,
+    768,
+    1280,
+    1920
+  ],
+  "compatibility": {
+    "bodyPatterns": "6/6",
+    "cornerSquares": "3/3",
+    "cornerDots": "2/2",
+    "sizes": "4/4",
+    "correctionLevels": "4/4"
+  },
+  "results": [
+    {
+      "name": "solid",
+      "decoded": true,
+      "width": 256,
+      "height": 256,
+      "quietZonePixels": 53,
+      "modulePixels": 7,
+      "uniqueColorBuckets": 2,
+      "transparentPixels": 0
+    },
+    {
+      "name": "linear",
+      "decoded": true,
+      "width": 512,
+      "height": 512,
+      "quietZonePixels": 82,
+      "modulePixels": 13,
+      "uniqueColorBuckets": 74,
+      "transparentPixels": 0
+    },
+    {
+      "name": "radial",
+      "decoded": true,
+      "width": 1024,
+      "height": 1024,
+      "quietZonePixels": 135,
+      "modulePixels": 27,
+      "uniqueColorBuckets": 79,
+      "transparentPixels": 0
+    },
+    {
+      "name": "custom-corners",
+      "decoded": true,
+      "width": 512,
+      "height": 512,
+      "quietZonePixels": 58,
+      "modulePixels": 12,
+      "uniqueColorBuckets": 45,
+      "transparentPixels": 0
+    },
+    {
+      "name": "transparent",
+      "decoded": true,
+      "width": 1024,
+      "height": 1024,
+      "quietZonePixels": 116,
+      "modulePixels": 24,
+      "uniqueColorBuckets": 1,
+      "transparentPixels": 758088
+    },
+    {
+      "name": "preset",
+      "decoded": true,
+      "width": 2048,
+      "height": 2048,
+      "quietZonePixels": 241,
+      "modulePixels": 55,
+      "uniqueColorBuckets": 166,
+      "transparentPixels": 0
+    },
+    {
+      "name": "long-url",
+      "decoded": true,
+      "width": 2048,
+      "height": 2048,
+      "quietZonePixels": 133,
+      "modulePixels": 23,
+      "uniqueColorBuckets": 1,
+      "transparentPixels": 0
+    }
+  ]
+}

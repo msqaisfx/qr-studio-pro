@@ -2,7 +2,7 @@
 
 Professional, open-source QR code designer focused on privacy and a clean editing experience.
 
-> Phase 03 — version 0.1.0
+> Phase 04 — version 0.1.0
 
 ## Features
 
@@ -13,6 +13,8 @@ Professional, open-source QR code designer focused on privacy and a clean editin
 - Professional responsive studio shell with tools, canvas, and inspector
 - Six QR body patterns, supported corner styles, export sizing, and L/M/Q/H correction
 - Calculated four-module quiet zones and verified UTF-8 QR payloads
+- Independent solid or gradient colors for QR modules and corners, plus solid or transparent backgrounds
+- Nine live color presets and an advisory multi-stop contrast guard
 - Locally bundled Inter and Noto Sans Arabic variable fonts
 - Local-first: input is processed only in the browser
 - TypeScript, linting, unit tests, and production build checks
@@ -34,12 +36,12 @@ pnpm lint
 pnpm test
 pnpm build
 # With the dev server running:
-pnpm verify:phase03
+pnpm verify:phase04
 ```
 
 ## Scope
 
-This version intentionally has no backend, database, accounts, analytics, payments, dynamic QR codes, image uploads, or advanced style editor. See [docs/PHASES.md](docs/PHASES.md) and [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md).
+This version intentionally has no backend, database, accounts, analytics, payments, dynamic QR codes, image or logo uploads, frames, or full templates. See [docs/PHASES.md](docs/PHASES.md), [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md), and [docs/CONTRAST_GUARD.md](docs/CONTRAST_GUARD.md).
 
 ## Contributing and security
 
