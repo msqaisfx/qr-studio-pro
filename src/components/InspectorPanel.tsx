@@ -1,13 +1,15 @@
 import { useApp } from '../app/appContext'
-import { getContentKind } from '../utils/content'
 import { Icons } from './icons'
 import type { QrDesignSettings } from '../types/qr'
+import type { ContentType } from '../features/content/contentTypes'
+import type { TranslationKey } from '../locales'
 
-export function InspectorPanel({ value, settings }: { value: string; settings: QrDesignSettings }) {
+const typeLabels:Record<ContentType,TranslationKey>={website:'typeWebsite',text:'typeText',wifi:'typeWifi',vcard:'typeVcard',whatsapp:'typeWhatsapp',email:'typeEmail',phone:'typePhone',sms:'typeSms',location:'typeLocation',event:'typeEvent',crypto:'typeCrypto'}
+
+export function InspectorPanel({ value, settings, contentType }: { value: string; settings: QrDesignSettings; contentType:ContentType }) {
   const { t } = useApp()
-  const kind = getContentKind(value)
-  const kindLabel = kind === 'url' ? t('validUrl') : kind === 'text' ? t('plainText') : t('emptyContent')
-  const isReady = kind !== 'empty'
+  const isReady = Boolean(value.trim())
+  const kindLabel = isReady ? t(typeLabels[contentType]) : t('emptyContent')
 
   return (
     <aside className="inspector-panel" aria-labelledby="inspector-title">

@@ -2,7 +2,7 @@
 
 Professional, open-source QR code designer focused on privacy and a clean editing experience.
 
-> Phase 05 — version 0.1.0
+> Phase 06 — version 0.1.0
 
 ## Features
 
@@ -16,6 +16,7 @@ Professional, open-source QR code designer focused on privacy and a clean editin
 - Independent solid or gradient colors for QR modules and corners, plus solid or transparent backgrounds
 - Nine live color presets and an advisory multi-stop contrast guard
 - Local PNG/JPEG/WebP logo processing with safe shapes, backgrounds, padding, and an independent decode guard
+- Eleven locally encoded QR content types: website, text, Wi-Fi, vCard, WhatsApp, email, phone, SMS, location, event, and crypto
 - Locally bundled Inter and Noto Sans Arabic variable fonts
 - Local-first: input is processed only in the browser
 - TypeScript, linting, unit tests, and production build checks
@@ -39,6 +40,7 @@ pnpm build
 # With the dev server running:
 pnpm verify:phase04
 pnpm verify:phase05
+pnpm verify:phase06
 ```
 
 ## Scope

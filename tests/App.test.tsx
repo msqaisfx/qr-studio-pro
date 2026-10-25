@@ -35,7 +35,7 @@ describe('QR Studio Pro', () => {
   it('updates the QR preview when content is entered', async () => {
     const user = userEvent.setup()
     renderApp()
-    await user.type(screen.getByRole('textbox', { name: 'الرابط أو النص' }), 'مرحبا')
+    await user.type(screen.getByRole('textbox', { name: 'رابط الموقع' }), 'https://example.com')
     expect(append).toHaveBeenCalled()
     expect(screen.getByRole('button', { name: /تنزيل PNG/ })).toBeEnabled()
   })
@@ -106,7 +106,7 @@ describe('QR Studio Pro', () => {
   it('downloads the generated QR as PNG', async () => {
     const user = userEvent.setup()
     renderApp()
-    await user.type(screen.getByRole('textbox', { name: 'الرابط أو النص' }), 'https://example.com')
+    await user.type(screen.getByRole('textbox', { name: 'رابط الموقع' }), 'https://example.com')
     await user.click(screen.getByRole('button', { name: /تنزيل PNG/ }))
     expect(download).toHaveBeenCalledWith({ name: 'qr-studio-pro', extension: 'png' })
   })

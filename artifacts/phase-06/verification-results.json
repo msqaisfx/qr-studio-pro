@@ -1,0 +1,81 @@
+{
+  "generatedAt": "2026-10-25T18:19:33.555Z",
+  "decodePassed": 11,
+  "decodeFailed": 0,
+  "runtimeErrors": [],
+  "responsiveWidths": [
+    375,
+    768,
+    1280,
+    1920
+  ],
+  "statePreserved": true,
+  "results": [
+    {
+      "name": "website",
+      "decoded": true,
+      "width": 512,
+      "integratedDesign": false
+    },
+    {
+      "name": "text",
+      "decoded": true,
+      "width": 512,
+      "integratedDesign": true
+    },
+    {
+      "name": "wifi",
+      "decoded": true,
+      "width": 512,
+      "integratedDesign": false
+    },
+    {
+      "name": "vcard",
+      "decoded": true,
+      "width": 512,
+      "integratedDesign": false
+    },
+    {
+      "name": "whatsapp",
+      "decoded": true,
+      "width": 512,
+      "integratedDesign": false
+    },
+    {
+      "name": "email",
+      "decoded": true,
+      "width": 512,
+      "integratedDesign": false
+    },
+    {
+      "name": "phone",
+      "decoded": true,
+      "width": 512,
+      "integratedDesign": false
+    },
+    {
+      "name": "sms",
+      "decoded": true,
+      "width": 512,
+      "integratedDesign": false
+    },
+    {
+      "name": "location",
+      "decoded": true,
+      "width": 512,
+      "integratedDesign": false
+    },
+    {
+      "name": "event",
+      "decoded": true,
+      "width": 512,
+      "integratedDesign": false
+    },
+    {
+      "name": "crypto",
+      "decoded": true,
+      "width": 512,
+      "integratedDesign": false
+    }
+  ]
+}

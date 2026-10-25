@@ -12,6 +12,7 @@
     "verify:phase03": "node scripts/verify-phase03.mjs",
     "verify:phase04": "node scripts/verify-phase04.mjs",
     "verify:phase05": "node scripts/verify-phase05.mjs",
+    "verify:phase06": "node scripts/verify-phase06.mjs",
     "typecheck": "tsc -b --pretty false"
   },
   "dependencies": {
