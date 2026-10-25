@@ -102,8 +102,8 @@ try {
   }
   if (!downloaded || (await stat(`${downloads}/${downloaded}`)).size < 1000) throw new Error('public PNG export failed')
   await evaluate(`Promise.race([navigator.serviceWorker.ready.then(()=>true),new Promise((_,reject)=>setTimeout(()=>reject(new Error('service worker ready timeout')),20000))])`)
-  await waitFor(`Boolean(navigator.serviceWorker.controller)`, 'service worker claim')
-  await send('Page.reload')
+  await evaluate(`location.reload()`)
+  await sleep(1500)
   await waitFor(`Boolean(navigator.serviceWorker.controller) && Boolean(document.querySelector('.app-shell'))`, 'service worker control')
   await send('Network.emulateNetworkConditions', { offline: true, latency: 0, downloadThroughput: 0, uploadThroughput: 0 })
   await send('Page.reload')
