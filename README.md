@@ -2,7 +2,7 @@
 
 Professional, open-source QR code designer focused on privacy and a clean editing experience.
 
-> Phase 08 — version 0.1.0
+> Phase 09 — version 0.1.0
 
 ## Features
 
@@ -20,6 +20,8 @@ Professional, open-source QR code designer focused on privacy and a clean editin
 - A unified export studio with safe filenames, 256–4096 px raster output, SVG, quality controls, transparency, and print-page settings
 - A local Scan Guard with independent payload decoding, measured quiet-zone and density checks, contrast, logo, finder-pattern, and export-format analysis
 - Honest PASS, WARNING, FAIL, and UNKNOWN states with advisory recommendations and export blocking for unsafe or unverifiable results
+- Versioned local IndexedDB projects with CRUD, search, recent sorting, optional autosave, and portable validated JSON files
+- Twelve real, editable professional templates that preserve the current QR content and logo
 - Locally bundled Inter and Noto Sans Arabic variable fonts
 - Local-first: input is processed only in the browser
 - TypeScript, linting, unit tests, and production build checks
@@ -46,11 +48,12 @@ pnpm verify:phase05
 pnpm verify:phase06
 pnpm verify:phase07
 pnpm verify:phase08
+pnpm verify:phase09
 ```
 
 ## Scope
 
-This version intentionally has no backend, database, accounts, analytics, payments, dynamic QR codes, frames, or full templates. See [docs/PHASES.md](docs/PHASES.md), [docs/SCAN_GUARD.md](docs/SCAN_GUARD.md), [docs/REAL_DEVICE_TESTING.md](docs/REAL_DEVICE_TESTING.md), and [docs/EXPORT_ARCHITECTURE.md](docs/EXPORT_ARCHITECTURE.md).
+This version intentionally has no backend, server database, accounts, analytics, payments, dynamic QR codes, or frames. See [docs/PHASES.md](docs/PHASES.md), [docs/LOCAL_PROJECTS.md](docs/LOCAL_PROJECTS.md), [docs/SCAN_GUARD.md](docs/SCAN_GUARD.md), and [docs/EXPORT_ARCHITECTURE.md](docs/EXPORT_ARCHITECTURE.md).
 
 ## Contributing and security
 

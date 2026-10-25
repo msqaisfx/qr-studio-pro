@@ -2,7 +2,7 @@
 
 مصمم رموز QR احترافي ومفتوح المصدر، يركز على الخصوصية وتجربة استخدام نظيفة.
 
-> المرحلة الثامنة — الإصدار 0.1.0
+> المرحلة التاسعة — الإصدار 0.1.0
 
 ## المزايا
 
@@ -20,6 +20,8 @@
 - استوديو تصدير موحد بأسماء آمنة ودقات 256–4096 بكسل وSVG وتحكم بالجودة والشفافية وإعدادات صفحات الطباعة
 - حارس قراءة محلي بفك ترميز مستقل وفحص فعلي للمنطقة الهادئة والكثافة والتباين والشعار وأنماط الباحث وصيغة التصدير
 - حالات صريحة PASS وWARNING وFAIL وUNKNOWN مع توصيات استرشادية ومنع التصدير عند الفشل أو تعذر التحقق
+- مشاريع محلية بإصدارات داخل IndexedDB مع CRUD وبحث وترتيب وحفظ تلقائي اختياري وملفات JSON متحققة
+- اثنا عشر قالبًا احترافيًا فعليًا وقابلًا للتعديل يحافظ على محتوى QR والشعار الحاليين
 - خطا Inter وNoto Sans Arabic مضمنان محليًا
 - خصوصية محلية: تتم معالجة الإدخال داخل المتصفح فقط
 - فحص TypeScript وESLint واختبارات وحدات وبناء إنتاجي
@@ -46,11 +48,12 @@ pnpm verify:phase05
 pnpm verify:phase06
 pnpm verify:phase07
 pnpm verify:phase08
+pnpm verify:phase09
 ```
 
 ## نطاق المرحلة
 
-لا يتضمن هذا الإصدار Backend أو قاعدة بيانات أو حسابات أو إحصائيات أو دفعًا أو QR ديناميكيًا أو إطارات أو قوالب كاملة. راجع [docs/PHASES.md](docs/PHASES.md) و[docs/SCAN_GUARD.md](docs/SCAN_GUARD.md) و[docs/REAL_DEVICE_TESTING.md](docs/REAL_DEVICE_TESTING.md) و[docs/EXPORT_ARCHITECTURE.md](docs/EXPORT_ARCHITECTURE.md).
+لا يتضمن هذا الإصدار Backend أو قاعدة بيانات خادمية أو حسابات أو إحصائيات أو دفعًا أو QR ديناميكيًا أو إطارات. راجع [docs/PHASES.md](docs/PHASES.md) و[docs/LOCAL_PROJECTS.md](docs/LOCAL_PROJECTS.md) و[docs/SCAN_GUARD.md](docs/SCAN_GUARD.md) و[docs/EXPORT_ARCHITECTURE.md](docs/EXPORT_ARCHITECTURE.md).
 
 ## المساهمة والأمان
 

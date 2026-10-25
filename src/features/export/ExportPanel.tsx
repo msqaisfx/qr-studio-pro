@@ -13,14 +13,15 @@ import { runQualityGuard } from '../quality/qualityRunner'
 const formats: ExportFormat[] = ['png', 'svg', 'webp', 'jpeg', 'pdf']
 const resolutions = [256, 512, 1024, 2048, 4096] as const
 
-export function ExportPanel({ payload, settings }: { payload: string; settings: QrDesignSettings }) {
+export function ExportPanel({ payload, settings, options: controlledOptions, onOptionsChange }: { payload: string; settings: QrDesignSettings; options?:ExportOptions; onOptionsChange?:(value:ExportOptions)=>void }) {
   const { t } = useApp()
-  const [options, setOptions] = useState<ExportOptions>({ ...defaultExportOptions, resolution: settings.exportSize })
+  const [localOptions, setLocalOptions] = useState<ExportOptions>({ ...defaultExportOptions, resolution: settings.exportSize })
+  const options=controlledOptions??localOptions
   const [state, setState] = useState<'idle' | 'working' | 'valid' | 'warning' | 'unsafe' | 'unknown' | 'error'>('idle')
   const previewRef = useRef<HTMLDivElement>(null)
   const engineRef = useRef<QRCodeStyling | null>(null)
   const safeName = useMemo(() => sanitizeFilename(options.filename, options.format), [options.filename, options.format])
-  const update = <K extends keyof ExportOptions>(key: K, value: ExportOptions[K]) => setOptions((current) => ({ ...current, [key]: value }))
+  const update = <K extends keyof ExportOptions>(key: K, value: ExportOptions[K]) => { const next={...options,[key]:value}; if(onOptionsChange)onOptionsChange(next);else setLocalOptions(next) }
 
   useEffect(() => {
     const container = previewRef.current

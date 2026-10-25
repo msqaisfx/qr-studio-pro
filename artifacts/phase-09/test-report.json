@@ -1,0 +1,30 @@
+{
+  "generatedAt": "2026-10-25T19:17:35.232Z",
+  "indexedDbReload": true,
+  "autosaveReload": true,
+  "projectCountAfterImport": 2,
+  "templateCount": 12,
+  "templateScanGuardStatus": "unknown",
+  "sensitiveConsent": true,
+  "sensitiveConsoleLeak": false,
+  "jsonRoundTrip": true,
+  "responsive": [
+    {
+      "width": 375,
+      "overflow": 0
+    },
+    {
+      "width": 768,
+      "overflow": 0
+    },
+    {
+      "width": 1280,
+      "overflow": 0
+    },
+    {
+      "width": 1920,
+      "overflow": 0
+    }
+  ],
+  "runtimeErrors": []
+}
