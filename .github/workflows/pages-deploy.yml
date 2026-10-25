@@ -60,4 +60,14 @@ jobs:
       - name: Verify the deployed public beta
         env:
           CHROME_PATH: /usr/bin/google-chrome
-        run: node scripts/verify-public-beta.mjs https://msqaisfx.github.io/qr-studio-pro/
+        run: |
+          set +e
+          node scripts/verify-public-beta.mjs https://msqaisfx.github.io/qr-studio-pro/ 2>&1 | tee public-beta-verification.log
+          status=${PIPESTATUS[0]}
+          {
+            echo '## Public beta verification log'
+            echo '```text'
+            cat public-beta-verification.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
