@@ -2,7 +2,7 @@
 
 Professional, open-source QR code designer focused on privacy and a clean editing experience.
 
-> Phase 10 — version 0.1.0
+> Phase 11 release-readiness candidate — version 0.1.0
 
 ## Features
 
@@ -61,7 +61,7 @@ This version intentionally has no backend, server database, accounts, analytics,
 
 ## Contributing and security
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), [PRIVACY.md](PRIVACY.md), [CHANGELOG.md](CHANGELOG.md), and the [GitHub Pages preparation guide](docs/GITHUB_PAGES.md).
 
 ## License
 

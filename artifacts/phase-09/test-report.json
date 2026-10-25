@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-10-25T19:17:35.232Z",
+  "generatedAt": "2026-10-25T19:35:25.553Z",
   "indexedDbReload": true,
   "autosaveReload": true,
   "projectCountAfterImport": 2,
   "templateCount": 12,
-  "templateScanGuardStatus": "unknown",
+  "templateScanGuardStatus": "pass",
   "sensitiveConsent": true,
   "sensitiveConsoleLeak": false,
   "jsonRoundTrip": true,

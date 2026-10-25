@@ -1,0 +1,45 @@
+{
+  "generatedAt": "2026-10-25T19:40:28.560Z",
+  "security": {
+    "executed": false,
+    "scriptNodes": 0,
+    "externalRequests": [],
+    "networkRequests": 17,
+    "originRequests": 17,
+    "noPayloadTransmission": true
+  },
+  "accessibility": {
+    "htmlLang": "ar",
+    "htmlDir": "rtl",
+    "main": 1,
+    "headings": 2,
+    "visibleControls": 27,
+    "unnamedControls": [],
+    "unlabelledInputs": [],
+    "reducedMotion": true,
+    "liveRegions": 3
+  },
+  "languageAfterToggle": {
+    "lang": "en",
+    "dir": "ltr"
+  },
+  "responsive": [
+    {
+      "width": 375,
+      "overflow": 0
+    },
+    {
+      "width": 768,
+      "overflow": 0
+    },
+    {
+      "width": 1280,
+      "overflow": 0
+    },
+    {
+      "width": 1920,
+      "overflow": 0
+    }
+  ],
+  "runtimeErrors": []
+}
