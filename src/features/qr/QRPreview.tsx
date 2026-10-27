@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import QRCodeStyling from 'qr-code-styling'
 import { useApp } from '../../app/appContext'
 import { getContentKind } from '../../utils/content'
@@ -21,6 +21,7 @@ export function QRPreview({ value, settings, onLogoGuardChange, onOpenExport }: 
   const qrRef = useRef<QRCodeStyling | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [moduleCount, setModuleCount] = useState<number | null>(null)
+  const [previewZoom, setPreviewZoom] = useState<'fit' | 1 | 1.5 | 2>('fit')
   const normalizedValue = value.trim()
   const kind = getContentKind(value)
 
@@ -67,7 +68,11 @@ export function QRPreview({ value, settings, onLogoGuardChange, onOpenExport }: 
     <section className="preview-panel" aria-labelledby="preview-title">
       <div className="canvas-toolbar">
         <div><span className="canvas-dot" /><span>{t('workspace')}</span></div>
-        <span className="zoom-label">100%</span>
+        <div className="zoom-controls" role="group" aria-label={t('previewZoom')}>
+          <button type="button" aria-pressed={previewZoom === 'fit'} onClick={() => setPreviewZoom('fit')}>{t('fitCanvas')}</button>
+          {([1, 1.5, 2] as const).map((zoom) => <button type="button" key={zoom} aria-pressed={previewZoom === zoom} onClick={() => setPreviewZoom(zoom)}>{Math.round(zoom * 100)}%</button>)}
+          <button type="button" onClick={() => setPreviewZoom('fit')} aria-label={t('resetZoom')}>{t('resetZoom')}</button>
+        </div>
       </div>
       <div className="preview-stage" aria-live="polite" aria-busy="false">
         {!normalizedValue && (
@@ -77,7 +82,7 @@ export function QRPreview({ value, settings, onLogoGuardChange, onOpenExport }: 
             <p>{t('emptyDescription')}</p>
           </div>
         )}
-        <div className={normalizedValue && !error ? 'qr-artboard visible' : 'qr-artboard'}>
+        <div className={normalizedValue && !error ? 'qr-artboard visible' : 'qr-artboard'} data-preview-zoom={previewZoom} style={{ '--preview-zoom': previewZoom === 'fit' ? 1 : previewZoom } as CSSProperties}>
           <div className="artboard-meta"><span id="preview-title">{t('preview')}</span><span>{moduleCount ? `${moduleCount} × ${moduleCount} modules` : '300 × 300'}</span></div>
           <div ref={containerRef} className="qr-canvas" aria-label={normalizedValue ? t('preview') : undefined} />
           <div className="artboard-caption"><span>{kind === 'url' ? <Icons.link /> : <Icons.text />}{kind === 'url' ? t('validUrl') : t('plainText')}</span><small>{normalizedValue.length} {t('characterCount')}</small></div>

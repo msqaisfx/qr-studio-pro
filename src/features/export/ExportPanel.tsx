@@ -19,6 +19,7 @@ export function ExportPanel({ payload, settings, options: controlledOptions, onO
   const options=controlledOptions??localOptions
   const [state, setState] = useState<'idle' | 'working' | 'valid' | 'warning' | 'unsafe' | 'unknown' | 'error'>('idle')
   const [validationEvidence, setValidationEvidence] = useState('')
+  const [failureKind, setFailureKind] = useState<'render' | 'integrity' | 'decode' | 'mismatch' | 'verification' | null>(null)
   const previewRef = useRef<HTMLDivElement>(null)
   const engineRef = useRef<QRCodeStyling | null>(null)
   const safeName = useMemo(() => sanitizeFilename(options.filename, options.format), [options.filename, options.format])
@@ -46,15 +47,20 @@ export function ExportPanel({ payload, settings, options: controlledOptions, onO
     if (!payload || state === 'working') return
     setState('working')
     setValidationEvidence('')
+    setFailureKind(null)
     try {
       const file = await createExportFile(payload, settings, options)
-      await validateExportFile(file, options.format)
+      try { await validateExportFile(file, options.format) }
+      catch (error) { setFailureKind('integrity'); throw error }
       const report = await runQualityGuard(payload, resolveExportSettings(settings, options), file.width ?? options.resolution, true, file.scanSource)
       setValidationEvidence(report.checks.filter((check) => check.status !== 'pass').map((check) => `${check.id}:${check.status}:${check.evidence}`).join('|'))
-      if (report.overall === 'fail') { setState('unsafe'); return }
-      if (report.overall === 'unknown') { setState('unknown'); return }
+      if (report.overall === 'fail') {
+        const decode = report.checks.find((check) => check.id === 'decode' || check.id === 'payload')
+        setFailureKind(decode?.evidence.includes('mismatch') ? 'mismatch' : 'decode'); setState('unsafe'); return
+      }
+      if (report.overall === 'unknown') { setFailureKind('verification'); setState('unknown'); return }
       downloadExportFile(file); setState(report.overall === 'warning' ? 'warning' : 'valid')
-    } catch { setState('error') }
+    } catch { setFailureKind((current) => current ?? 'render'); setState('error') }
   }
 
   function applySaferSettings() {
@@ -76,7 +82,7 @@ export function ExportPanel({ payload, settings, options: controlledOptions, onO
     <div className="export-preview"><div ref={previewRef} /><span><strong>{t('exportPreview')}</strong><small>{options.format.toUpperCase()} · {options.format === 'svg' ? t('vectorFormat') : `${options.resolution}px`} · {safeName}</small></span></div>
     {settings.logo.enabled && options.format === 'svg' && <p className="export-note">{t('svgRasterLogoNote')}</p>}
     {options.format === 'pdf' && <p className="export-note">{t('pdfRasterNote')}</p>}
-    <div className={`export-validation ${state}`} data-validation-evidence={validationEvidence} role="status" aria-live="polite">{state === 'working' ? t('exportWorking') : state === 'valid' ? t('exportValidated') : state === 'warning' ? t('exportWarningAllowed') : state === 'unsafe' ? t('exportUnsafe') : state === 'unknown' ? t('exportUnknownBlocked') : state === 'error' ? t('exportFailed') : t('exportValidationReady')}</div>
+    <div className={`export-validation ${state}`} data-validation-evidence={validationEvidence} role="status" aria-live="polite"><strong>{state === 'valid' ? 'PASS' : state === 'warning' ? 'WARNING' : state === 'unsafe' ? 'FAIL' : state === 'unknown' || state === 'error' ? 'UNKNOWN' : ''}</strong>{state === 'working' ? t('exportWorking') : state === 'valid' ? t('exportValidated') : state === 'warning' ? t('exportWarningAllowed') : state === 'unsafe' ? t(failureKind === 'mismatch' ? 'exportPayloadMismatch' : 'exportDecodeFailed') : state === 'unknown' ? t('exportUnknownBlocked') : state === 'error' ? t(failureKind === 'integrity' ? 'exportIntegrityFailed' : 'exportRenderFailed') : t('exportValidationReady')}</div>
     {state === 'unsafe' && settings.logo.enabled && onSettingsChange && <button className="text-button" type="button" onClick={applySaferSettings}>{t('applySaferSettings')}</button>}
     <button className="download-button export-download" type="button" disabled={!payload || state === 'working'} onClick={exportFile}><Icons.download />{state === 'working' ? t('exportWorking') : t('downloadFile')}</button>
     <p className="field-hint">{t('exportPrivacy')}</p>
