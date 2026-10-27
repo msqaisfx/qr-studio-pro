@@ -10,6 +10,7 @@ import { validateExportFile } from './fileValidation'
 import { sanitizeFilename } from './filename'
 import { defaultExportOptions, type ExportFormat, type ExportOptions } from './exportTypes'
 import { runQualityGuard } from '../quality/qualityRunner'
+import { findSafeRecovery, type SafeRecoveryProposal } from './safeRecovery'
 
 const formats: ExportFormat[] = ['png', 'svg', 'webp', 'jpeg', 'pdf']
 const resolutions = [256, 512, 1024, 2048, 4096] as const
@@ -22,7 +23,10 @@ export function ExportPanel({ payload, settings, options: controlledOptions, onO
   const [stateHash, setStateHash] = useState('')
   const [snapshotId, setSnapshotId] = useState('')
   const [validationEvidence, setValidationEvidence] = useState('')
-  const [failureKind, setFailureKind] = useState<'render' | 'integrity' | 'decode' | 'mismatch' | 'verification' | null>(null)
+  const [failureKind, setFailureKind] = useState<'render' | 'integrity' | 'decode' | 'mismatch' | 'density' | 'contrast' | 'quietZone' | 'verification' | null>(null)
+  const [recovering, setRecovering] = useState(false)
+  const [recovery, setRecovery] = useState<SafeRecoveryProposal | null>(null)
+  const [recoveryUnavailable, setRecoveryUnavailable] = useState(false)
   const previewRef = useRef<HTMLDivElement>(null)
   const engineRef = useRef<QRCodeStyling | null>(null)
   const previewSequence = useRef(0)
@@ -64,6 +68,7 @@ export function ExportPanel({ payload, settings, options: controlledOptions, onO
     setState('working')
     setValidationEvidence('')
     setFailureKind(null)
+    setRecovery(null); setRecoveryUnavailable(false)
     const request = ++validationSequence.current
     const snapshot = createDesignSnapshot(payload, settings, renderOptions)
     setSnapshotId(snapshot.id)
@@ -77,18 +82,32 @@ export function ExportPanel({ payload, settings, options: controlledOptions, onO
       if (!isCurrent()) return
       setValidationEvidence(report.checks.map((check) => `${check.id}:${check.status}:${check.evidence}`).join('|'))
       if (report.overall === 'fail') {
-        const decode = report.checks.find((check) => check.id === 'decode' || check.id === 'payload')
-        setFailureKind(decode?.evidence.includes('mismatch') ? 'mismatch' : 'decode'); setState('unsafe'); return
+        const failed = report.checks.find((check) => check.status === 'fail')
+        setFailureKind(failed?.id === 'payload' || failed?.evidence.includes('mismatch') ? 'mismatch' : failed?.id === 'density' ? 'density' : failed?.id === 'contrast' ? 'contrast' : failed?.id === 'quietZone' ? 'quietZone' : 'decode'); setState('unsafe'); return
       }
       if (report.overall === 'unknown') { setFailureKind('verification'); setState('unknown'); return }
       downloadExportFile(file); setState(report.overall === 'warning' ? 'warning' : 'valid')
     } catch { if (isCurrent()) { setFailureKind((current) => current ?? 'render'); setState('error') } }
   }
 
-  function applySaferSettings() {
-    if (!onSettingsChange) return
-    onSettingsChange({ ...settings, errorCorrectionLevel: 'H', logo: { ...settings.logo, size: Math.min(settings.logo.size, 0.2), sizeMode: 'manual', autoFit: false } })
-    setStateHash(configurationHash); setState('idle'); setValidationEvidence('')
+  async function proposeSafeRecovery() {
+    if (!onSettingsChange || recovering) return
+    setRecovering(true); setRecovery(null); setRecoveryUnavailable(false)
+    const recoveryOptions = structuredClone(options)
+    try {
+      const proposal = await findSafeRecovery(settings, async (candidate) => {
+        const file = await createExportFile(payload, candidate, recoveryOptions)
+        await validateExportFile(file, recoveryOptions.format)
+        return runQualityGuard(payload, resolveExportSettings(candidate, recoveryOptions), file.width ?? recoveryOptions.resolution, true, file.scanSource)
+      })
+      setRecovery(proposal); setRecoveryUnavailable(!proposal)
+    } finally { setRecovering(false) }
+  }
+
+  function applyRecovery() {
+    if (!onSettingsChange || !recovery) return
+    onSettingsChange(recovery.proposed)
+    setRecovery(null); setRecoveryUnavailable(false); setState('idle'); setStateHash(''); setValidationEvidence('')
   }
 
   return <section className="export-panel" aria-labelledby="export-heading">
@@ -104,8 +123,10 @@ export function ExportPanel({ payload, settings, options: controlledOptions, onO
     <div className="export-preview"><div ref={previewRef} /><span><strong>{t('exportPreview')}</strong><small>{options.format.toUpperCase()} · {options.format === 'svg' ? t('vectorFormat') : `${options.resolution}px`} · {safeName}</small></span></div>
     {settings.logo.enabled && options.format === 'svg' && <p className="export-note">{t('svgRasterLogoNote')}</p>}
     {options.format === 'pdf' && <p className="export-note">{t('pdfRasterNote')}</p>}
-    <div className={`export-validation ${effectiveState}`} data-snapshot-id={stateHash === configurationHash ? snapshotId : ''} data-snapshot-hash={configurationHash} data-validation-evidence={stateHash === configurationHash ? validationEvidence : ''} role="status" aria-live="polite"><strong>{effectiveState === 'valid' ? 'PASS' : effectiveState === 'warning' ? 'WARNING' : effectiveState === 'unsafe' ? 'FAIL' : effectiveState === 'unknown' || effectiveState === 'error' ? 'UNKNOWN' : ''}</strong>{effectiveState === 'working' ? t('exportWorking') : effectiveState === 'valid' ? t('exportValidated') : effectiveState === 'warning' ? t('exportWarningAllowed') : effectiveState === 'unsafe' ? t(failureKind === 'mismatch' ? 'exportPayloadMismatch' : 'exportDecodeFailed') : effectiveState === 'unknown' ? t('exportUnknownBlocked') : effectiveState === 'error' ? t(failureKind === 'integrity' ? 'exportIntegrityFailed' : 'exportRenderFailed') : t('exportValidationReady')}</div>
-    {effectiveState === 'unsafe' && settings.logo.enabled && onSettingsChange && <button className="text-button" type="button" onClick={applySaferSettings}>{t('applySaferSettings')}</button>}
+    <div className={`export-validation ${effectiveState}`} data-snapshot-id={stateHash === configurationHash ? snapshotId : ''} data-snapshot-hash={configurationHash} data-validation-evidence={stateHash === configurationHash ? validationEvidence : ''} role="status" aria-live="polite"><strong>{effectiveState === 'valid' ? 'PASS' : effectiveState === 'warning' ? 'WARNING' : effectiveState === 'unsafe' ? 'FAIL' : effectiveState === 'unknown' || effectiveState === 'error' ? 'UNKNOWN' : ''}</strong>{effectiveState === 'working' ? t('exportWorking') : effectiveState === 'valid' ? t('exportValidated') : effectiveState === 'warning' ? t('exportWarningAllowed') : effectiveState === 'unsafe' ? t(failureKind === 'mismatch' ? 'exportPayloadMismatch' : failureKind === 'density' ? 'exportDensityFailed' : failureKind === 'contrast' ? 'exportContrastFailed' : failureKind === 'quietZone' ? 'exportQuietZoneFailed' : 'exportDecodeFailed') : effectiveState === 'unknown' ? t('exportUnknownBlocked') : effectiveState === 'error' ? t(failureKind === 'integrity' ? 'exportIntegrityFailed' : 'exportRenderFailed') : t('exportValidationReady')}</div>
+    {effectiveState === 'unsafe' && settings.logo.enabled && onSettingsChange && <div className="export-recovery"><p>{t('autoFixExplanation')}</p><button className="control-button auto-fix-button" type="button" disabled={recovering} onClick={() => void proposeSafeRecovery()}>{recovering ? t('autoFixTesting') : t('autoFixQr')}</button></div>}
+    {recovery && <section className="recovery-comparison" aria-labelledby="recovery-heading"><h2 id="recovery-heading">{t('autoFixComparison')}</h2><div><span>{t('autoFixBefore')} <strong>{Math.round(recovery.original.logo.size * 100)}% · ECC {recovery.original.errorCorrectionLevel} · {recovery.original.logo.padding}% {t('logoPadding')}</strong></span><span>{t('autoFixAfter')} <strong>{Math.round(recovery.proposed.logo.size * 100)}% · ECC {recovery.proposed.errorCorrectionLevel} · {recovery.proposed.logo.padding}% {t('logoPadding')}</strong></span></div><p>{t('autoFixConsent')}</p><div className="recovery-actions"><button className="control-button" type="button" onClick={applyRecovery}>{t('autoFixApply')}</button><button className="text-button" type="button" onClick={() => setRecovery(null)}>{t('autoFixCancel')}</button></div><details><summary>{t('autoFixTechnicalDetails')}</summary><code>{recovery.attempts.map((attempt) => `${Math.round(attempt.size * 100)}% / ECC ${attempt.errorCorrectionLevel} / ${attempt.status} / ${attempt.evidence}`).join('\n')}</code></details></section>}
+    {recoveryUnavailable && <p className="export-warning" role="alert"><Icons.info />{t('autoFixUnavailable')}</p>}
     <button className="download-button export-download" type="button" disabled={!payload || effectiveState === 'working'} onClick={exportFile}><Icons.download />{effectiveState === 'working' ? t('exportWorking') : t('downloadFile')}</button>
     <p className="field-hint">{t('exportPrivacy')}</p>
   </section>

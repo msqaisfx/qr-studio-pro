@@ -19,6 +19,6 @@ export default defineConfig(({command,mode})=>{
     base: process.env.VITE_BASE_PATH || '/',
     define:{__APP_METADATA__:JSON.stringify({version:appVersion,mode:buildMode,commitSha:commitSha()})},
     plugins: [react(), tailwindcss(), pwaServiceWorker()],
-    test: {environment:'jsdom',setupFiles:'./tests/setup.ts',css:true},
+    test: {environment:'jsdom',setupFiles:'./tests/setup.ts',css:true,include:['tests/**/*.test.{ts,tsx}']},
   }
 })

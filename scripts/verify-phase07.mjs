@@ -86,7 +86,12 @@ for (const format of ['png', 'svg', 'webp', 'jpeg', 'pdf']) {
   await setupDesign()
 }
 
-const transparent = await download('png', { resolution: 512, background: 'transparent' }); decodePng(transparent.buffer, expected); console.log('transparent PNG: decode passed')
+await clickFormat('png'); await setValue('#export-resolution', 512); await evaluate(`Array.from(document.querySelectorAll('.background-options button')).find((button)=>button.textContent.includes('Transparent'))?.click()`); await sleep(80)
+const transparentDirectory = join(temp, 'download-png-512-transparent'); await mkdir(transparentDirectory, { recursive: true }); await send('Browser.setDownloadBehavior', { behavior: 'allow', downloadPath: transparentDirectory }); await evaluate(`document.querySelector('.export-download').click()`)
+for (let attempt = 0; attempt < 300; attempt += 1) { if (!await evaluate(`document.querySelector('.export-validation')?.classList.contains('working')`)) break; await sleep(100) }
+const transparentFiles = await readdir(transparentDirectory); const transparentState = await evaluate(`['valid','warning','unsafe','unknown','error'].find(state=>document.querySelector('.export-validation')?.classList.contains(state))||''`)
+if (transparentFiles.length || transparentState !== 'unknown') throw new Error(`transparent PNG policy mismatch: ${transparentState}`)
+console.log('transparent PNG: UNKNOWN contrast blocked as designed')
 await fresh('ar', 'dark', 1280, 1000); await setValue('#content-url', 'https://example.com/arabic'); await evaluate(`document.querySelector('[data-tool="export"]').click()`); await sleep(200); await screenshot('arabic-dark')
 await fresh('en', 'light', 1920, 1080); await setValue('#content-url', 'https://example.com/english'); await evaluate(`document.querySelector('[data-tool="export"]').click()`); await sleep(200); await screenshot('english-light')
 for (const width of [375, 768, 1280, 1920]) { await fresh('en', 'light', width, width === 375 ? 812 : 1000); await setValue('#content-url', 'https://example.com/responsive'); await evaluate(`document.querySelector('[data-tool="export"]').click()`); await sleep(200); const layout = JSON.parse(await evaluate(`JSON.stringify({client:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth})`)); if (layout.client !== layout.scroll) throw new Error(`overflow ${width}`); if (width === 375) await screenshot('mobile-layout'); console.log(`responsive-${width}: overflow=0`) }
