@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import QRCodeStyling from 'qr-code-styling'
-import jsQR from 'jsqr'
 import { useApp } from '../../app/appContext'
 import { getContentKind } from '../../utils/content'
 import { Icons } from '../../components/icons'
 import type { LogoGuardState, QrDesignSettings } from '../../types/qr'
-import { encodeQrData } from './encoding'
+import { verifyQrImage } from '../quality/decodeValidation'
 import { appendPreparedQr, prepareQrEngine } from './qrEngine'
 import { QR_SIZE } from './qrOptions'
 
@@ -57,12 +56,8 @@ export function QRPreview({ value, settings, onLogoGuardChange, onOpenExport }: 
         const raw = await engine.getRawData('png')
         if (!(raw instanceof Blob)) throw new Error('missing-png')
         const bitmap = await createImageBitmap(raw)
-        const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height
-        const context = canvas.getContext('2d'); if (!context) throw new Error('missing-context')
-        context.drawImage(bitmap, 0, 0); bitmap.close()
-        const pixels = context.getImageData(0, 0, canvas.width, canvas.height)
-        const decoded = jsQR(pixels.data, pixels.width, pixels.height, { inversionAttempts: 'attemptBoth' })
-        if (!cancelled) onLogoGuardChange(decoded?.data === encodeQrData(normalizedValue) || decoded?.data === normalizedValue ? 'readable' : 'unreadable')
+        const verification = await verifyQrImage(bitmap, normalizedValue); bitmap.close()
+        if (!cancelled) onLogoGuardChange(verification.status === 'pass' ? 'readable' : verification.status === 'fail' ? 'unreadable' : 'unknown')
       } catch { if (!cancelled) onLogoGuardChange('error') }
     }, 350)
     return () => { cancelled = true; window.clearTimeout(timer) }

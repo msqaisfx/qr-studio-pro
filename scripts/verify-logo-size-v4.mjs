@@ -11,7 +11,7 @@ const execFile = promisify(execFileCallback)
 const sourcePath = process.env.QR_STUDIO_REAL_LOGO
 if (!sourcePath) throw new Error('QR_STUDIO_REAL_LOGO is required')
 const appUrl = process.env.QR_STUDIO_URL || 'http://127.0.0.1:5177/'
-const output = new URL('../artifacts/logo-size-control-v4/', import.meta.url).pathname
+const output = process.env.QR_STUDIO_ARTIFACTS || new URL('../artifacts/logo-size-control-v4/', import.meta.url).pathname
 const temporary = `/private/tmp/qr-studio-logo-v4-${Date.now()}`
 const downloads = join(temporary, 'downloads')
 await mkdir(output, { recursive: true }); await mkdir(downloads, { recursive: true })

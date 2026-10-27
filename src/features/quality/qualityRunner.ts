@@ -1,9 +1,8 @@
-import jsQR from 'jsqr'
 import type { QrDesignSettings } from '../../types/qr'
-import { encodeQrData } from '../qr/encoding'
 import { prepareQrEngine } from '../qr/qrEngine'
 import { buildQualityReport, type RenderEvidence } from './qualityAnalysis'
 import type { QualityReport } from './qualityTypes'
+import { verifyQrImage } from './decodeValidation'
 
 async function imageSource(blob: Blob): Promise<ImageBitmap | HTMLImageElement> {
   try { return await createImageBitmap(blob) } catch {
@@ -22,9 +21,10 @@ export async function inspectQrImage(blob: Blob, payload: string, moduleCount: n
   const context = canvas.getContext('2d', { willReadFrequently: true }); if (!context) throw new Error('missing-canvas')
   // Decode transparent exports against a known neutral surface, while contrast remains UNKNOWN elsewhere.
   context.fillStyle = '#ffffff'; context.fillRect(0, 0, canvas.width, canvas.height)
-  context.drawImage(source, 0, 0, canvas.width, canvas.height); if ('close' in source) source.close()
+  context.drawImage(source, 0, 0, canvas.width, canvas.height)
   const image = context.getImageData(0, 0, canvas.width, canvas.height)
-  const decoded = jsQR(image.data, image.width, image.height, { inversionAttempts: 'attemptBoth' })
+  const verification = await verifyQrImage(source, payload)
+  if ('close' in source) source.close()
   const corner = [image.data[0], image.data[1], image.data[2], image.data[3]]
   let minX = image.width; let minY = image.height; let maxX = -1; let maxY = -1
   for (let y = 0; y < image.height; y += 1) for (let x = 0; x < image.width; x += 1) {
@@ -36,7 +36,7 @@ export async function inspectQrImage(blob: Blob, payload: string, moduleCount: n
   const modulePixels = foregroundWidth ? foregroundWidth / moduleCount : null
   const margin = foregroundWidth ? Math.min(minX, minY, image.width - 1 - maxX, image.height - 1 - maxY) : null
   const quietZoneModules = margin !== null && modulePixels ? margin / modulePixels : null
-  return { decoded: Boolean(decoded), payloadMatches: decoded ? decoded.data === payload || decoded.data === encodeQrData(payload) : false, moduleCount, modulePixels, quietZoneModules, formatValid, exportSize }
+  return { decoded: verification.status === 'unknown' ? null : verification.status === 'pass', payloadMatches: verification.status === 'unknown' ? null : verification.status === 'pass', decodeEvidence: verification.evidence, moduleCount, modulePixels, quietZoneModules, formatValid, exportSize }
 }
 
 export async function runQualityGuard(payload: string, settings: QrDesignSettings, size = 768, formatValid: boolean | null = null, existingBlob?: Blob): Promise<QualityReport> {

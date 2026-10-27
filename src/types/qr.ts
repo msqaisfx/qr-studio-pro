@@ -57,7 +57,7 @@ export interface QrLogoSettings {
   cropWidth: number
   cropHeight: number
 }
-export type LogoGuardState = 'idle' | 'checking' | 'readable' | 'unreadable' | 'error'
+export type LogoGuardState = 'idle' | 'checking' | 'readable' | 'unreadable' | 'unknown' | 'error'
 
 export interface QrDesignSettings {
   bodyPattern: DotType

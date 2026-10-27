@@ -6,6 +6,7 @@ import type { QualityCheck, QualityReport, QualityStatus, QualitySuggestion } fr
 export interface RenderEvidence {
   decoded: boolean | null
   payloadMatches: boolean | null
+  decodeEvidence?: string
   moduleCount: number | null
   modulePixels: number | null
   quietZoneModules: number | null
@@ -33,7 +34,7 @@ export function buildQualityReport(payload: string, settings: QrDesignSettings, 
   const coverage = settings.logo.enabled ? appliedLogoSize ** 2 * 100 : 0
   const checks: QualityCheck[] = []
   checks.push({ id: 'payload', status: payload.trim() ? 'pass' : 'fail', evidence: payload.trim() ? `${bytes}-bytes` : 'empty' })
-  checks.push({ id: 'decode', status: evidence.decoded === null ? 'unknown' : evidence.decoded && evidence.payloadMatches ? 'pass' : 'fail', evidence: evidence.decoded === null ? 'unavailable' : evidence.decoded && evidence.payloadMatches ? 'payload-match' : 'decode-or-match-failed' })
+  checks.push({ id: 'decode', status: evidence.decoded === null ? 'unknown' : evidence.decoded && evidence.payloadMatches ? 'pass' : 'fail', evidence: evidence.decodeEvidence ?? (evidence.decoded === null ? 'unavailable' : evidence.decoded && evidence.payloadMatches ? 'payload-match' : 'decode-or-match-failed') })
   checks.push({ id: 'contrast', status: contrast.status, evidence: contrast.ratio === null ? 'transparent-background' : `minimum-${contrast.ratio.toFixed(2)}` })
   checks.push({ id: 'quietZone', status: evidence.quietZoneModules === null ? 'unknown' : evidence.quietZoneModules >= 3.8 ? 'pass' : evidence.quietZoneModules >= 3 ? 'warning' : 'fail', evidence: evidence.quietZoneModules === null ? 'unavailable' : `${evidence.quietZoneModules.toFixed(2)}-modules` })
   const logoRisk = settings.logo.enabled && (coverage > 6.25 || settings.logo.padding > 16 || settings.errorCorrectionLevel !== 'H')
