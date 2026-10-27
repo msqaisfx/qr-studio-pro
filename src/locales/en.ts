@@ -404,5 +404,8 @@ export const en = {
   themeDark: 'Dark mode',
   privacy: 'Private and fully local',
   privacyDetail: 'Your content never leaves your device.',
-  footer: 'Open source · Development 0.9.3-beta.1',
+  footer: 'Open source',
+  buildDevelopment: 'Development',
+  releaseBeta: 'Beta',
+  releaseStable: 'Stable',
 } as const
