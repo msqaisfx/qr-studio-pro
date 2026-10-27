@@ -404,5 +404,8 @@ export const ar = {
   themeDark: 'الوضع الداكن',
   privacy: 'خاص ومحلي بالكامل',
   privacyDetail: 'لا يغادر المحتوى جهازك.',
-  footer: 'مفتوح المصدر · تطوير 0.9.3-beta.1',
+  footer: 'مفتوح المصدر',
+  buildDevelopment: 'تطوير',
+  releaseBeta: 'تجريبي',
+  releaseStable: 'مستقر',
 } as const
