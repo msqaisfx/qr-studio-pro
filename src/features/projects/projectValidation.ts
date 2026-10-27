@@ -1,4 +1,5 @@
 import { defaultExportOptions, exportMimeTypes } from '../export/exportTypes'
+import { defaultQrDesignSettings } from '../../types/qr'
 import { PROJECT_FILE_KIND, PROJECT_SCHEMA_VERSION, type ProjectFile, type SavedProject } from './projectTypes'
 
 export const MAX_PROJECT_FILE_BYTES = 7 * 1024 * 1024
@@ -22,11 +23,22 @@ export function validateProject(value: unknown): SavedProject {
   return structuredClone(value) as unknown as SavedProject
 }
 
+function migrateLegacyProject(value: unknown): unknown {
+  if (!isObject(value) || value.schemaVersion !== 1 || !isObject(value.design)) return value
+  const design = value.design; const oldLogo = isObject(design.logo) ? design.logo : {}
+  const logo = {
+    ...defaultQrDesignSettings.logo,
+    ...oldLogo,
+    backgroundMode: oldLogo.backgroundMode === 'white' ? 'custom' : oldLogo.backgroundMode ?? defaultQrDesignSettings.logo.backgroundMode,
+  }
+  return { ...value, schemaVersion: PROJECT_SCHEMA_VERSION, design: { ...design, logo } }
+}
+
 export function parseProjectFile(text: string): SavedProject {
   if (new TextEncoder().encode(text).length > MAX_PROJECT_FILE_BYTES) throw new Error('file-too-large')
   let value: unknown; try { value = JSON.parse(text) } catch { throw new Error('malformed-json') }
-  if (!isObject(value) || value.kind !== PROJECT_FILE_KIND || value.schemaVersion !== PROJECT_SCHEMA_VERSION) throw new Error('unsupported-version')
-  return validateProject(value.project)
+  if (!isObject(value) || value.kind !== PROJECT_FILE_KIND || ![1, PROJECT_SCHEMA_VERSION].includes(Number(value.schemaVersion))) throw new Error('unsupported-version')
+  return validateProject(migrateLegacyProject(value.project))
 }
 
 export function serializeProject(project: SavedProject): string {
@@ -35,7 +47,7 @@ export function serializeProject(project: SavedProject): string {
 }
 
 export function migrateProject(value: unknown): SavedProject {
-  return validateProject(value)
+  return validateProject(migrateLegacyProject(value))
 }
 
 export { defaultExportOptions }

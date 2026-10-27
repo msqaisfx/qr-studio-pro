@@ -4,9 +4,14 @@ All notable changes to QR Studio Pro are documented here. The project follows se
 
 ## [Unreleased]
 
-### Quality assurance
+## [0.9.1-beta.1] - 2026-10-27
 
-- Final release-readiness, security, privacy, performance, accessibility, browser, QR reliability, and offline audits.
+- Smart Logo Studio 2.0 with independent container and visible-logo sizing.
+- Aspect-ratio-safe contain and cover modes, transparent-padding trim, and edge-connected solid-background removal.
+- Clean, Seamless, and Badge integration styles with opacity, padding, shape, and corner controls.
+- Before/after preview, local undo/reset, low-resolution guidance, and expanded logo decode guard.
+- Version 2 local project schema with automatic migration from existing version 1 projects.
+- Professional GitHub documentation and real application screenshots.
 
 ## [0.9.0-beta.1] - 2026-10-25
 

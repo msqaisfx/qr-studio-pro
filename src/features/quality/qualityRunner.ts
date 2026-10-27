@@ -15,11 +15,14 @@ async function imageSource(blob: Blob): Promise<ImageBitmap | HTMLImageElement> 
 
 export async function inspectQrImage(blob: Blob, payload: string, moduleCount: number, exportSize: number, formatValid: boolean | null): Promise<RenderEvidence> {
   const source = await imageSource(blob)
-  const canvas = document.createElement('canvas'); canvas.width = source.width; canvas.height = source.height
+  // jsQR is more reliable and substantially cheaper on a camera-like raster than on a raw 4096px export.
+  // Preserve the complete image and its geometry while bounding the decode surface.
+  const scale = Math.min(1, 1600 / Math.max(source.width, source.height))
+  const canvas = document.createElement('canvas'); canvas.width = Math.max(1, Math.round(source.width * scale)); canvas.height = Math.max(1, Math.round(source.height * scale))
   const context = canvas.getContext('2d', { willReadFrequently: true }); if (!context) throw new Error('missing-canvas')
   // Decode transparent exports against a known neutral surface, while contrast remains UNKNOWN elsewhere.
   context.fillStyle = '#ffffff'; context.fillRect(0, 0, canvas.width, canvas.height)
-  context.drawImage(source, 0, 0); if ('close' in source) source.close()
+  context.drawImage(source, 0, 0, canvas.width, canvas.height); if ('close' in source) source.close()
   const image = context.getImageData(0, 0, canvas.width, canvas.height)
   const decoded = jsQR(image.data, image.width, image.height, { inversionAttempts: 'attemptBoth' })
   const corner = [image.data[0], image.data[1], image.data[2], image.data[3]]

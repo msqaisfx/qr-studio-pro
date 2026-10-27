@@ -20,7 +20,9 @@ export interface QrBackgroundStyle {
   transparent: boolean
 }
 export type LogoShape = 'square' | 'circle' | 'rounded'
-export type LogoBackgroundMode = 'white' | 'custom' | 'transparent'
+export type LogoBackgroundMode = 'original' | 'transparent' | 'remove-solid' | 'custom'
+export type LogoFit = 'contain' | 'cover'
+export type LogoIntegrationStyle = 'clean' | 'seamless' | 'badge'
 export interface QrLogoSettings {
   enabled: boolean
   sourceDataUrl: string | null
@@ -29,11 +31,19 @@ export interface QrLogoSettings {
   mimeType: 'image/png' | 'image/jpeg' | 'image/webp' | null
   width: number
   height: number
+  /** Outer area reserved by qr-code-styling. Kept as `size` for v1 project compatibility. */
   size: number
+  visibleSize: number
   shape: LogoShape
+  fit: LogoFit
+  integrationStyle: LogoIntegrationStyle
   backgroundMode: LogoBackgroundMode
   backgroundColor: string
+  backgroundOpacity: number
   padding: number
+  cornerRadius: number
+  autoTrim: boolean
+  removalTolerance: number
 }
 export type LogoGuardState = 'idle' | 'checking' | 'readable' | 'unreadable' | 'error'
 
@@ -66,5 +76,5 @@ export const defaultQrDesignSettings: QrDesignSettings = {
   cornerSquareColor: defaultCornerSquareColor,
   cornerDotColor: defaultCornerDotColor,
   background: { color: '#ffffff', transparent: false },
-  logo: { enabled: false, sourceDataUrl: null, renderedDataUrl: null, fileName: null, mimeType: null, width: 0, height: 0, size: 0.18, shape: 'rounded', backgroundMode: 'white', backgroundColor: '#ffffff', padding: 10 },
+  logo: { enabled: false, sourceDataUrl: null, renderedDataUrl: null, fileName: null, mimeType: null, width: 0, height: 0, size: 0.18, visibleSize: 0.96, shape: 'rounded', fit: 'contain', integrationStyle: 'clean', backgroundMode: 'custom', backgroundColor: '#ffffff', backgroundOpacity: 1, padding: 2, cornerRadius: 18, autoTrim: true, removalTolerance: 24 },
 }

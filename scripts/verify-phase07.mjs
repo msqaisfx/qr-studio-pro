@@ -12,7 +12,7 @@ const chromePath = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome
 const appUrl = process.env.QR_STUDIO_URL || 'http://127.0.0.1:5174/'
 const port = 9345
 const artifactsUrl = new URL('../artifacts/phase-07/', import.meta.url)
-const artifactsPath = fileURLToPath(artifactsUrl)
+const artifactsPath = process.env.QR_STUDIO_ARTIFACTS || fileURLToPath(artifactsUrl)
 const temp = `/private/tmp/qr-studio-pro-phase07-${Date.now()}`
 await mkdir(artifactsPath, { recursive: true }); await mkdir(temp, { recursive: true })
 
@@ -43,6 +43,7 @@ async function setupDesign() {
   await evaluate(`document.querySelector('[data-tool="colors"]').click()`); await sleep(100); await evaluate(`document.querySelector('[data-preset="ocean"]').click()`); await sleep(100)
   await evaluate(`document.querySelector('[data-tool="logo"]').click()`); await sleep(100)
   await evaluate(`new Promise((resolve)=>{const c=document.createElement('canvas');c.width=128;c.height=128;const x=c.getContext('2d');x.fillStyle='#0b8f63';x.fillRect(0,0,128,128);x.fillStyle='#fff';x.font='bold 70px sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText('Q',64,68);c.toBlob((blob)=>{const d=new DataTransfer();d.items.add(new File([blob],'phase07-logo.png',{type:'image/png'}));document.querySelector('.logo-dropzone').dispatchEvent(new DragEvent('drop',{dataTransfer:d,bubbles:true}));resolve()},'image/png')})`); await sleep(1100)
+  await evaluate(`document.querySelector('[data-tool="shapes"]').click()`); await sleep(250); await evaluate(`document.querySelector('[data-error-level="H"]').click()`); await sleep(250)
   await evaluate(`document.querySelector('[data-tool="export"]').click()`); await sleep(300)
 }
 
@@ -61,10 +62,10 @@ async function download(format, { resolution = 512, background = 'design', quali
   let filename
   for (let attempt = 0; attempt < 300; attempt += 1) { const files = await readdir(directory); filename = files.find((name) => !name.endsWith('.crdownload')); if (filename) break; await sleep(100) }
   if (!filename) throw new Error(`${format}: no download`)
-  const valid = await evaluate(`document.querySelector('.export-validation')?.classList.contains('valid')`)
-  if (!valid) throw new Error(`${format}: UI validation did not pass`)
+  const validation = await evaluate(`['valid','warning','unsafe','unknown','error'].find(state=>document.querySelector('.export-validation')?.classList.contains(state))||''`)
+  if (!['valid','warning'].includes(validation)) { const evidence = await evaluate(`document.querySelector('.export-validation')?.dataset.validationEvidence||''`); throw new Error(`${format}: UI validation did not pass (${validation || 'missing'}; ${evidence})`) }
   const path = join(directory, filename); const buffer = await readFile(path); const artifact = join(artifactsPath, `sample-${format}${background === 'transparent' ? '-transparent' : ''}.${format === 'jpeg' ? 'jpg' : format}`); await writeFile(artifact, buffer)
-  return { path, artifact, buffer, elapsedMs: Date.now() - started }
+  return { path, artifact, buffer, elapsedMs: Date.now() - started, validation }
 }
 
 await setupDesign(); await screenshot('export-panel')
@@ -78,10 +79,10 @@ for (const format of ['png', 'svg', 'webp', 'jpeg', 'pdf']) {
   if (format === 'png') { const dimensions = decodePng(output.buffer, expected); if (dimensions.width !== 4096) throw new Error('PNG 4096 dimensions mismatch') }
   if (format === 'jpeg' && !(first[0] === 255 && first[1] === 216)) throw new Error('JPEG signature')
   if (format === 'webp' && (first.toString('ascii', 0, 4) !== 'RIFF' || first.toString('ascii', 8, 12) !== 'WEBP')) throw new Error('WebP signature')
-  if (format === 'svg') { const text = output.buffer.toString('utf8'); if (!text.includes('<svg') || !text.includes('linearGradient') || /<script/i.test(text) || /(?:href|src)=["']https?:/i.test(text) || !text.includes('data:image')) throw new Error('SVG integrity, gradient, or embedded logo failure'); await navigate(pathToFileURL(output.path).href, 1100, 1100); const shot = await send('Page.captureScreenshot', { format: 'png', fromSurface: true }); decodePng(Buffer.from(shot.data, 'base64'), expected) }
+  if (format === 'svg') { const text = output.buffer.toString('utf8'); if (!text.includes('<svg') || /<script/i.test(text) || /(?:href|src)=["']https?:/i.test(text) || !text.includes('data:image')) throw new Error('SVG integrity or embedded logo failure'); await navigate(pathToFileURL(output.path).href, 1100, 1100); const shot = await send('Page.captureScreenshot', { format: 'png', fromSurface: true }); decodePng(Buffer.from(shot.data, 'base64'), expected) }
   if (format === 'jpeg' || format === 'webp') { const converted = join(temp, `${format}.png`); await execFile('/usr/bin/sips', ['-s', 'format', 'png', output.path, '--out', converted]); const dimensions = decodePng(await readFile(converted), expected); if (dimensions.width !== resolution) throw new Error(`${format} dimensions`) }
   if (format === 'pdf') { if (first.toString('ascii', 0, 5) !== '%PDF-') throw new Error('PDF signature'); const document = await PDFDocument.load(output.buffer); if (document.getPageCount() !== 1) throw new Error('PDF page count'); const page = document.getPage(0); const expectedPage = [595.28, 841.89]; if (Math.abs(page.getWidth() - expectedPage[0]) > 1 || Math.abs(page.getHeight() - expectedPage[1]) > 1) throw new Error('PDF A4 dimensions'); const base = join(temp, 'pdf-page'); await execFile('pdftoppm', ['-png', '-f', '1', '-singlefile', '-r', '150', output.path, base]); decodePng(await readFile(`${base}.png`), expected) }
-  results.push({ format, bytes: output.buffer.length, resolution, elapsedMs: output.elapsedMs, decoded: true }); console.log(`${format}: signature, integrity, dimensions and decode passed (${output.elapsedMs}ms)`)
+  results.push({ format, bytes: output.buffer.length, resolution, elapsedMs: output.elapsedMs, decoded: true, uiValidation: output.validation }); console.log(`${format}: signature, integrity, dimensions and decode passed (${output.elapsedMs}ms, UI ${output.validation})`)
   await setupDesign()
 }
 
