@@ -13,7 +13,7 @@ import { runQualityGuard } from '../quality/qualityRunner'
 const formats: ExportFormat[] = ['png', 'svg', 'webp', 'jpeg', 'pdf']
 const resolutions = [256, 512, 1024, 2048, 4096] as const
 
-export function ExportPanel({ payload, settings, options: controlledOptions, onOptionsChange }: { payload: string; settings: QrDesignSettings; options?:ExportOptions; onOptionsChange?:(value:ExportOptions)=>void }) {
+export function ExportPanel({ payload, settings, options: controlledOptions, onOptionsChange, onSettingsChange }: { payload: string; settings: QrDesignSettings; options?:ExportOptions; onOptionsChange?:(value:ExportOptions)=>void; onSettingsChange?:(value:QrDesignSettings)=>void }) {
   const { t } = useApp()
   const [localOptions, setLocalOptions] = useState<ExportOptions>({ ...defaultExportOptions, resolution: settings.exportSize })
   const options=controlledOptions??localOptions
@@ -57,6 +57,12 @@ export function ExportPanel({ payload, settings, options: controlledOptions, onO
     } catch { setState('error') }
   }
 
+  function applySaferSettings() {
+    if (!onSettingsChange) return
+    onSettingsChange({ ...settings, errorCorrectionLevel: 'H', logo: { ...settings.logo, size: Math.min(settings.logo.size, 0.2), sizeMode: 'manual', autoFit: false } })
+    setState('idle'); setValidationEvidence('')
+  }
+
   return <section className="export-panel" aria-labelledby="export-heading">
     <div className="editor-heading"><div><span className="section-kicker">EXPORT STUDIO</span><h1 id="export-heading">{t('exportStudio')}</h1></div></div>
     <fieldset className="option-group"><legend>{t('formatSelector')}</legend><div className="export-formats">{formats.map((format) => <button type="button" key={format} data-export-format={format} className={options.format === format ? 'selected' : ''} aria-pressed={options.format === format} onClick={() => update('format', format)}>{format === 'jpeg' ? 'JPEG' : format.toUpperCase()}</button>)}</div></fieldset>
@@ -71,6 +77,7 @@ export function ExportPanel({ payload, settings, options: controlledOptions, onO
     {settings.logo.enabled && options.format === 'svg' && <p className="export-note">{t('svgRasterLogoNote')}</p>}
     {options.format === 'pdf' && <p className="export-note">{t('pdfRasterNote')}</p>}
     <div className={`export-validation ${state}`} data-validation-evidence={validationEvidence} role="status" aria-live="polite">{state === 'working' ? t('exportWorking') : state === 'valid' ? t('exportValidated') : state === 'warning' ? t('exportWarningAllowed') : state === 'unsafe' ? t('exportUnsafe') : state === 'unknown' ? t('exportUnknownBlocked') : state === 'error' ? t('exportFailed') : t('exportValidationReady')}</div>
+    {state === 'unsafe' && settings.logo.enabled && onSettingsChange && <button className="text-button" type="button" onClick={applySaferSettings}>{t('applySaferSettings')}</button>}
     <button className="download-button export-download" type="button" disabled={!payload || state === 'working'} onClick={exportFile}><Icons.download />{state === 'working' ? t('exportWorking') : t('downloadFile')}</button>
     <p className="field-hint">{t('exportPrivacy')}</p>
   </section>

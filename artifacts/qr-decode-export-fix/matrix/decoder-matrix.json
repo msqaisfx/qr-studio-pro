@@ -1,0 +1,330 @@
+{
+  "source": {
+    "file": "C513347B-138A-4331-BD6A-D6724F959540.PNG",
+    "sha256": "9879d5e3bd1b754f9658655eaac9cd34936870c7b488168d08d0f389dd3ea2fb"
+  },
+  "payload": "https://msqaisfx.github.io/qr-studio-pro/",
+  "matrix": [
+    {
+      "ecc": "M",
+      "style": "Seamless Fusion",
+      "requestedSize": 20,
+      "format": "png",
+      "resolution": 512,
+      "state": "warning",
+      "evidence": "logo:warning:4.00%-ecc-M-padding-0",
+      "text": "Downloaded with a warning. Review the Scan Guard evidence and test the final use case."
+    },
+    {
+      "ecc": "M",
+      "style": "Seamless Fusion",
+      "requestedSize": 25,
+      "format": "png",
+      "resolution": 512,
+      "state": "unsafe",
+      "evidence": "decode:fail:confirmed-no-decode:jsqr+zxing|logo:warning:6.25%-ecc-M-padding-0",
+      "text": "The exported file could not be decoded. Your settings were kept; increase contrast, size, or correction level."
+    },
+    {
+      "ecc": "M",
+      "style": "Seamless Fusion",
+      "requestedSize": 30,
+      "format": "png",
+      "resolution": 512,
+      "state": "unsafe",
+      "evidence": "decode:fail:confirmed-no-decode:jsqr+zxing|logo:warning:9.00%-ecc-M-padding-0",
+      "text": "The exported file could not be decoded. Your settings were kept; increase contrast, size, or correction level."
+    },
+    {
+      "ecc": "M",
+      "style": "Seamless Fusion",
+      "requestedSize": 35,
+      "format": "png",
+      "resolution": 512,
+      "state": "unsafe",
+      "evidence": "decode:fail:confirmed-no-decode:jsqr+zxing|logo:warning:12.25%-ecc-M-padding-0|finder:warning:corner-contrast-pass;logo-centered-0.35",
+      "text": "The exported file could not be decoded. Your settings were kept; increase contrast, size, or correction level."
+    },
+    {
+      "ecc": "M",
+      "style": "Adaptive Badge",
+      "requestedSize": 20,
+      "format": "png",
+      "resolution": 512,
+      "state": "warning",
+      "evidence": "logo:warning:4.00%-ecc-M-padding-7",
+      "text": "Downloaded with a warning. Review the Scan Guard evidence and test the final use case."
+    },
+    {
+      "ecc": "M",
+      "style": "Adaptive Badge",
+      "requestedSize": 25,
+      "format": "png",
+      "resolution": 512,
+      "state": "unsafe",
+      "evidence": "decode:fail:confirmed-no-decode:jsqr+zxing|logo:warning:6.25%-ecc-M-padding-7",
+      "text": "The exported file could not be decoded. Your settings were kept; increase contrast, size, or correction level."
+    },
+    {
+      "ecc": "M",
+      "style": "Adaptive Badge",
+      "requestedSize": 30,
+      "format": "png",
+      "resolution": 512,
+      "state": "unsafe",
+      "evidence": "decode:fail:confirmed-no-decode:jsqr+zxing|logo:warning:9.00%-ecc-M-padding-7",
+      "text": "The exported file could not be decoded. Your settings were kept; increase contrast, size, or correction level."
+    },
+    {
+      "ecc": "M",
+      "style": "Adaptive Badge",
+      "requestedSize": 35,
+      "format": "png",
+      "resolution": 512,
+      "state": "unsafe",
+      "evidence": "decode:fail:confirmed-no-decode:jsqr+zxing|logo:warning:12.25%-ecc-M-padding-7|finder:warning:corner-contrast-pass;logo-centered-0.35",
+      "text": "The exported file could not be decoded. Your settings were kept; increase contrast, size, or correction level."
+    },
+    {
+      "ecc": "M",
+      "style": "Minimal Cutout",
+      "requestedSize": 20,
+      "format": "png",
+      "resolution": 512,
+      "state": "warning",
+      "evidence": "logo:warning:4.00%-ecc-M-padding-1",
+      "text": "Downloaded with a warning. Review the Scan Guard evidence and test the final use case."
+    },
+    {
+      "ecc": "M",
+      "style": "Minimal Cutout",
+      "requestedSize": 25,
+      "format": "png",
+      "resolution": 512,
+      "state": "unsafe",
+      "evidence": "decode:fail:confirmed-no-decode:jsqr+zxing|logo:warning:6.25%-ecc-M-padding-1",
+      "text": "The exported file could not be decoded. Your settings were kept; increase contrast, size, or correction level."
+    },
+    {
+      "ecc": "M",
+      "style": "Minimal Cutout",
+      "requestedSize": 30,
+      "format": "png",
+      "resolution": 512,
+      "state": "unsafe",
+      "evidence": "decode:fail:confirmed-no-decode:jsqr+zxing|logo:warning:9.00%-ecc-M-padding-1",
+      "text": "The exported file could not be decoded. Your settings were kept; increase contrast, size, or correction level."
+    },
+    {
+      "ecc": "M",
+      "style": "Minimal Cutout",
+      "requestedSize": 35,
+      "format": "png",
+      "resolution": 512,
+      "state": "unsafe",
+      "evidence": "decode:fail:confirmed-no-decode:jsqr+zxing|logo:warning:12.25%-ecc-M-padding-1|finder:warning:corner-contrast-pass;logo-centered-0.35",
+      "text": "The exported file could not be decoded. Your settings were kept; increase contrast, size, or correction level."
+    },
+    {
+      "ecc": "M",
+      "style": "Premium Brand",
+      "requestedSize": 20,
+      "format": "png",
+      "resolution": 512,
+      "state": "warning",
+      "evidence": "logo:warning:4.00%-ecc-M-padding-4",
+      "text": "Downloaded with a warning. Review the Scan Guard evidence and test the final use case."
+    },
+    {
+      "ecc": "M",
+      "style": "Premium Brand",
+      "requestedSize": 25,
+      "format": "png",
+      "resolution": 512,
+      "state": "unsafe",
+      "evidence": "decode:fail:confirmed-no-decode:jsqr+zxing|logo:warning:6.25%-ecc-M-padding-4",
+      "text": "The exported file could not be decoded. Your settings were kept; increase contrast, size, or correction level."
+    },
+    {
+      "ecc": "M",
+      "style": "Premium Brand",
+      "requestedSize": 30,
+      "format": "png",
+      "resolution": 512,
+      "state": "unsafe",
+      "evidence": "decode:fail:confirmed-no-decode:jsqr+zxing|logo:warning:9.00%-ecc-M-padding-4",
+      "text": "The exported file could not be decoded. Your settings were kept; increase contrast, size, or correction level."
+    },
+    {
+      "ecc": "M",
+      "style": "Premium Brand",
+      "requestedSize": 35,
+      "format": "png",
+      "resolution": 512,
+      "state": "unsafe",
+      "evidence": "decode:fail:confirmed-no-decode:jsqr+zxing|logo:warning:12.25%-ecc-M-padding-4|finder:warning:corner-contrast-pass;logo-centered-0.35",
+      "text": "The exported file could not be decoded. Your settings were kept; increase contrast, size, or correction level."
+    },
+    {
+      "ecc": "H",
+      "style": "Seamless Fusion",
+      "requestedSize": 20,
+      "format": "png",
+      "resolution": 512,
+      "state": "valid",
+      "evidence": "",
+      "text": "The file passed its integrity and automated QR decode checks."
+    },
+    {
+      "ecc": "H",
+      "style": "Seamless Fusion",
+      "requestedSize": 25,
+      "format": "png",
+      "resolution": 512,
+      "state": "valid",
+      "evidence": "",
+      "text": "The file passed its integrity and automated QR decode checks."
+    },
+    {
+      "ecc": "H",
+      "style": "Seamless Fusion",
+      "requestedSize": 30,
+      "format": "png",
+      "resolution": 512,
+      "state": "warning",
+      "evidence": "logo:warning:9.00%-ecc-H-padding-0",
+      "text": "Downloaded with a warning. Review the Scan Guard evidence and test the final use case."
+    },
+    {
+      "ecc": "H",
+      "style": "Seamless Fusion",
+      "requestedSize": 35,
+      "format": "png",
+      "resolution": 512,
+      "state": "warning",
+      "evidence": "logo:warning:12.25%-ecc-H-padding-0|finder:warning:corner-contrast-pass;logo-centered-0.35",
+      "text": "Downloaded with a warning. Review the Scan Guard evidence and test the final use case."
+    },
+    {
+      "ecc": "H",
+      "style": "Adaptive Badge",
+      "requestedSize": 20,
+      "format": "png",
+      "resolution": 512,
+      "state": "valid",
+      "evidence": "",
+      "text": "The file passed its integrity and automated QR decode checks."
+    },
+    {
+      "ecc": "H",
+      "style": "Adaptive Badge",
+      "requestedSize": 25,
+      "format": "png",
+      "resolution": 512,
+      "state": "valid",
+      "evidence": "",
+      "text": "The file passed its integrity and automated QR decode checks."
+    },
+    {
+      "ecc": "H",
+      "style": "Adaptive Badge",
+      "requestedSize": 30,
+      "format": "png",
+      "resolution": 512,
+      "state": "warning",
+      "evidence": "logo:warning:9.00%-ecc-H-padding-7",
+      "text": "Downloaded with a warning. Review the Scan Guard evidence and test the final use case."
+    },
+    {
+      "ecc": "H",
+      "style": "Adaptive Badge",
+      "requestedSize": 35,
+      "format": "png",
+      "resolution": 512,
+      "state": "unsafe",
+      "evidence": "decode:fail:confirmed-no-decode:jsqr+zxing|logo:warning:12.25%-ecc-H-padding-7|finder:warning:corner-contrast-pass;logo-centered-0.35",
+      "text": "The exported file could not be decoded. Your settings were kept; increase contrast, size, or correction level."
+    },
+    {
+      "ecc": "H",
+      "style": "Minimal Cutout",
+      "requestedSize": 20,
+      "format": "png",
+      "resolution": 512,
+      "state": "valid",
+      "evidence": "",
+      "text": "The file passed its integrity and automated QR decode checks."
+    },
+    {
+      "ecc": "H",
+      "style": "Minimal Cutout",
+      "requestedSize": 25,
+      "format": "png",
+      "resolution": 512,
+      "state": "valid",
+      "evidence": "",
+      "text": "The file passed its integrity and automated QR decode checks."
+    },
+    {
+      "ecc": "H",
+      "style": "Minimal Cutout",
+      "requestedSize": 30,
+      "format": "png",
+      "resolution": 512,
+      "state": "warning",
+      "evidence": "logo:warning:9.00%-ecc-H-padding-1",
+      "text": "Downloaded with a warning. Review the Scan Guard evidence and test the final use case."
+    },
+    {
+      "ecc": "H",
+      "style": "Minimal Cutout",
+      "requestedSize": 35,
+      "format": "png",
+      "resolution": 512,
+      "state": "warning",
+      "evidence": "logo:warning:12.25%-ecc-H-padding-1|finder:warning:corner-contrast-pass;logo-centered-0.35",
+      "text": "Downloaded with a warning. Review the Scan Guard evidence and test the final use case."
+    },
+    {
+      "ecc": "H",
+      "style": "Premium Brand",
+      "requestedSize": 20,
+      "format": "png",
+      "resolution": 512,
+      "state": "valid",
+      "evidence": "",
+      "text": "The file passed its integrity and automated QR decode checks."
+    },
+    {
+      "ecc": "H",
+      "style": "Premium Brand",
+      "requestedSize": 25,
+      "format": "png",
+      "resolution": 512,
+      "state": "valid",
+      "evidence": "",
+      "text": "The file passed its integrity and automated QR decode checks."
+    },
+    {
+      "ecc": "H",
+      "style": "Premium Brand",
+      "requestedSize": 30,
+      "format": "png",
+      "resolution": 512,
+      "state": "warning",
+      "evidence": "logo:warning:9.00%-ecc-H-padding-4",
+      "text": "Downloaded with a warning. Review the Scan Guard evidence and test the final use case."
+    },
+    {
+      "ecc": "H",
+      "style": "Premium Brand",
+      "requestedSize": 35,
+      "format": "png",
+      "resolution": 512,
+      "state": "warning",
+      "evidence": "logo:warning:12.25%-ecc-H-padding-4|finder:warning:corner-contrast-pass;logo-centered-0.35",
+      "text": "Downloaded with a warning. Review the Scan Guard evidence and test the final use case."
+    }
+  ],
+  "runtimeErrors": []
+}
