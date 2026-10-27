@@ -1,5 +1,6 @@
 import type { QrDesignSettings } from '../../types/qr'
-import { prepareQrEngine } from '../qr/qrEngine'
+import { createDesignSnapshot } from '../qr/designSnapshot'
+import { prepareQrEngineAsync } from '../qr/qrEngine'
 import { buildQualityReport, type RenderEvidence } from './qualityAnalysis'
 import type { QualityReport } from './qualityTypes'
 import { verifyQrImage } from './decodeValidation'
@@ -41,7 +42,8 @@ export async function inspectQrImage(blob: Blob, payload: string, moduleCount: n
 
 export async function runQualityGuard(payload: string, settings: QrDesignSettings, size = 768, formatValid: boolean | null = null, existingBlob?: Blob): Promise<QualityReport> {
   if (!payload.trim()) return buildQualityReport(payload, settings, { decoded: false, payloadMatches: false, moduleCount: null, modulePixels: null, quietZoneModules: null, formatValid, exportSize: size })
-  const prepared = prepareQrEngine(payload, settings, size)
+  const snapshot = createDesignSnapshot(payload, settings, { size, formatValid })
+  const prepared = await prepareQrEngineAsync(snapshot.payload, snapshot.settings, size)
   const raw = existingBlob ?? await prepared.engine.getRawData('png')
   if (!(raw instanceof Blob)) return buildQualityReport(payload, settings, { decoded: null, payloadMatches: null, moduleCount: prepared.moduleCount, modulePixels: null, quietZoneModules: null, formatValid, exportSize: size })
   const resolvedFormatValid = formatValid ?? (!existingBlob && raw.type === 'image/png' ? true : null)

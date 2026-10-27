@@ -1,0 +1,81 @@
+{
+  "source": {
+    "file": "transparent-png.png",
+    "mime": "image/png",
+    "sha256": "3a4b067815cbd73c2b39759642b7602fa4210df2d6799bfa17c77a773ed1213e"
+  },
+  "payload": "https://msqaisfx.github.io/qr-studio-pro/",
+  "sizes": [],
+  "resolutionMatrix": [],
+  "distinctHashes": 0,
+  "livePreview": {
+    "children": 1,
+    "svgLength": 493962,
+    "rect": {
+      "width": 360,
+      "height": 360
+    }
+  },
+  "autoFit": {
+    "selectedSize": 32,
+    "summary": "5/9 candidate sizes decoded successfully",
+    "mode": "Auto Fit"
+  },
+  "exports": [
+    {
+      "format": "png",
+      "path": "logo-size-v4-png.png",
+      "bytes": 37824,
+      "sha256": "68671ddb84abc18ddeedb4b4ede0e8eaf414150f10ea62efe193c4d5bc6c45c0",
+      "decodeStatus": "PASS"
+    },
+    {
+      "format": "svg",
+      "path": "logo-size-v4-svg.svg",
+      "bytes": 493884,
+      "sha256": "5c09223aa04c844b00039f1dfeedd2dcc4698447d0d708bf76953922b0b02e5b",
+      "decodeStatus": "PASS"
+    },
+    {
+      "format": "webp",
+      "path": "logo-size-v4-webp.webp",
+      "bytes": 28606,
+      "sha256": "9f091a25d401bbc2b15c636654a662392ae7cfaa4611a4ec3f297d0b3bdffcad",
+      "decodeStatus": "PASS"
+    },
+    {
+      "format": "jpeg",
+      "path": "logo-size-v4-jpeg.jpg",
+      "bytes": 60638,
+      "sha256": "f6220129431435b11fcf7cb3824466b81069b4040713e6b13c82b18075aebcda",
+      "decodeStatus": "PASS"
+    },
+    {
+      "format": "pdf",
+      "path": "logo-size-v4-pdf.pdf",
+      "bytes": 206813,
+      "sha256": "5db340a608ce44397f389ed586f6e15c360456b0fa357dbe616e5bcdc631ef4c",
+      "decodeStatus": "PASS"
+    }
+  ],
+  "responsive": [
+    {
+      "width": 375,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "overflow": false
+    },
+    {
+      "width": 1920,
+      "overflow": false
+    }
+  ],
+  "runtimeErrors": [],
+  "referenceScreenshot": "NOT PROVIDED in this task; no fabricated comparison was made"
+}

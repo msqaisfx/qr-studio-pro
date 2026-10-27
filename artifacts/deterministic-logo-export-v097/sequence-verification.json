@@ -1,0 +1,187 @@
+{
+  "generatedAt": "2026-10-27T16:44:56.088Z",
+  "payload": "https://msqaisfx.github.io/qr-studio-pro/v097-deterministic",
+  "source": {
+    "file": "full-brand-original.png",
+    "sha256": "3a4b067815cbd73c2b39759642b7602fa4210df2d6799bfa17c77a773ed1213e"
+  },
+  "results": [
+    {
+      "scenario": "A-direct-35",
+      "validation": {
+        "status": "WARNING",
+        "hash": "daaec44fd8ab6fef",
+        "id": "daaec44fd8ab6fef-1ccdf4e1-54d1-4ad8-9e8d-59c1c42f0399",
+        "evidence": "payload:pass:59-bytes|decode:pass:payload-match:jsqr;readers:jsqr+zxing|contrast:pass:minimum-4.10|quietZone:pass:9.50-modules|logo:warning:12.25%-ecc-H-padding-0|finder:warning:corner-contrast-pass;logo-centered-0.35|density:pass:45-modules;8.00px;59-bytes;ecc-H|format:pass:signature-and-structure-valid",
+        "previewNodes": 1
+      },
+      "file": {
+        "path": "A-direct-35.png",
+        "sha256": "7f74f8bc5503b5411283643ce1ef913d42f8e0f6e73f09b670fbd03fccd1872a",
+        "bytes": 45152,
+        "dimensions": "512x512",
+        "jsqr": "PASS"
+      }
+    },
+    {
+      "scenario": "B-20-export-35",
+      "validation": {
+        "status": "WARNING",
+        "hash": "daaec44fd8ab6fef",
+        "id": "daaec44fd8ab6fef-596eb654-4720-461a-be22-7f4f59ecf462",
+        "evidence": "payload:pass:59-bytes|decode:pass:payload-match:jsqr;readers:jsqr+zxing|contrast:pass:minimum-4.10|quietZone:pass:9.50-modules|logo:warning:12.25%-ecc-H-padding-0|finder:warning:corner-contrast-pass;logo-centered-0.35|density:pass:45-modules;8.00px;59-bytes;ecc-H|format:pass:signature-and-structure-valid",
+        "previewNodes": 1
+      },
+      "file": {
+        "path": "B-final-35.png",
+        "sha256": "7f74f8bc5503b5411283643ce1ef913d42f8e0f6e73f09b670fbd03fccd1872a",
+        "bytes": 45152,
+        "dimensions": "512x512",
+        "jsqr": "PASS"
+      }
+    },
+    {
+      "scenario": "C-25-35",
+      "validation": {
+        "status": "WARNING",
+        "hash": "daaec44fd8ab6fef",
+        "id": "daaec44fd8ab6fef-be618abe-2af1-4a8b-9d49-d08bdecff2b7",
+        "evidence": "payload:pass:59-bytes|decode:pass:payload-match:jsqr;readers:jsqr+zxing|contrast:pass:minimum-4.10|quietZone:pass:9.50-modules|logo:warning:12.25%-ecc-H-padding-0|finder:warning:corner-contrast-pass;logo-centered-0.35|density:pass:45-modules;8.00px;59-bytes;ecc-H|format:pass:signature-and-structure-valid",
+        "previewNodes": 1
+      },
+      "file": {
+        "path": "C-final-35.png",
+        "sha256": "7f74f8bc5503b5411283643ce1ef913d42f8e0f6e73f09b670fbd03fccd1872a",
+        "bytes": 45152,
+        "dimensions": "512x512",
+        "jsqr": "PASS"
+      }
+    },
+    {
+      "scenario": "D-35-20-35",
+      "validation": {
+        "status": "WARNING",
+        "hash": "daaec44fd8ab6fef",
+        "id": "daaec44fd8ab6fef-8d9b97a7-58eb-46dc-bf94-570e9a15e18f",
+        "evidence": "payload:pass:59-bytes|decode:pass:payload-match:jsqr;readers:jsqr+zxing|contrast:pass:minimum-4.10|quietZone:pass:9.50-modules|logo:warning:12.25%-ecc-H-padding-0|finder:warning:corner-contrast-pass;logo-centered-0.35|density:pass:45-modules;8.00px;59-bytes;ecc-H|format:pass:signature-and-structure-valid",
+        "previewNodes": 1
+      },
+      "file": {
+        "path": "D-final-35.png",
+        "sha256": "7f74f8bc5503b5411283643ce1ef913d42f8e0f6e73f09b670fbd03fccd1872a",
+        "bytes": 45152,
+        "dimensions": "512x512",
+        "jsqr": "PASS"
+      }
+    },
+    {
+      "scenario": "E-reload-35",
+      "validation": {
+        "status": "WARNING",
+        "hash": "daaec44fd8ab6fef",
+        "id": "daaec44fd8ab6fef-09c19a7f-e3e2-4342-bfc5-0aacb0451009",
+        "evidence": "payload:pass:59-bytes|decode:pass:payload-match:jsqr;readers:jsqr+zxing|contrast:pass:minimum-4.10|quietZone:pass:9.50-modules|logo:warning:12.25%-ecc-H-padding-0|finder:warning:corner-contrast-pass;logo-centered-0.35|density:pass:45-modules;8.00px;59-bytes;ecc-H|format:pass:signature-and-structure-valid",
+        "previewNodes": 1
+      },
+      "file": {
+        "path": "E-final-35.png",
+        "sha256": "7f74f8bc5503b5411283643ce1ef913d42f8e0f6e73f09b670fbd03fccd1872a",
+        "bytes": 45152,
+        "dimensions": "512x512",
+        "jsqr": "PASS"
+      }
+    },
+    {
+      "scenario": "F-section-return",
+      "validation": {
+        "status": "WARNING",
+        "hash": "daaec44fd8ab6fef",
+        "id": "daaec44fd8ab6fef-a52e213d-c23e-4c7e-a5d6-6fba7bc19a25",
+        "evidence": "payload:pass:59-bytes|decode:pass:payload-match:jsqr;readers:jsqr+zxing|contrast:pass:minimum-4.10|quietZone:pass:9.50-modules|logo:warning:12.25%-ecc-H-padding-0|finder:warning:corner-contrast-pass;logo-centered-0.35|density:pass:45-modules;8.00px;59-bytes;ecc-H|format:pass:signature-and-structure-valid",
+        "previewNodes": 1
+      },
+      "file": {
+        "path": "F-final-35.png",
+        "sha256": "7f74f8bc5503b5411283643ce1ef913d42f8e0f6e73f09b670fbd03fccd1872a",
+        "bytes": 45152,
+        "dimensions": "512x512",
+        "jsqr": "PASS"
+      }
+    },
+    {
+      "scenario": "G-M-to-H",
+      "validation": {
+        "status": "WARNING",
+        "hash": "daaec44fd8ab6fef",
+        "id": "daaec44fd8ab6fef-ec02e273-5bfb-40d9-bd43-3bf40fc51009",
+        "evidence": "payload:pass:59-bytes|decode:pass:payload-match:jsqr;readers:jsqr+zxing|contrast:pass:minimum-4.10|quietZone:pass:9.50-modules|logo:warning:12.25%-ecc-H-padding-0|finder:warning:corner-contrast-pass;logo-centered-0.35|density:pass:45-modules;8.00px;59-bytes;ecc-H|format:pass:signature-and-structure-valid",
+        "previewNodes": 1
+      },
+      "file": {
+        "path": "G-final-35.png",
+        "sha256": "7f74f8bc5503b5411283643ce1ef913d42f8e0f6e73f09b670fbd03fccd1872a",
+        "bytes": 45152,
+        "dimensions": "512x512",
+        "jsqr": "PASS"
+      }
+    },
+    {
+      "scenario": "H-style-roundtrip",
+      "validation": {
+        "status": "WARNING",
+        "hash": "daaec44fd8ab6fef",
+        "id": "daaec44fd8ab6fef-352ee17b-6da7-4967-89a4-42231fb6c213",
+        "evidence": "payload:pass:59-bytes|decode:pass:payload-match:jsqr;readers:jsqr+zxing|contrast:pass:minimum-4.10|quietZone:pass:9.50-modules|logo:warning:12.25%-ecc-H-padding-0|finder:warning:corner-contrast-pass;logo-centered-0.35|density:pass:45-modules;8.00px;59-bytes;ecc-H|format:pass:signature-and-structure-valid",
+        "previewNodes": 1
+      },
+      "file": {
+        "path": "H-final-35.png",
+        "sha256": "7f74f8bc5503b5411283643ce1ef913d42f8e0f6e73f09b670fbd03fccd1872a",
+        "bytes": 45152,
+        "dimensions": "512x512",
+        "jsqr": "PASS"
+      }
+    },
+    {
+      "scenario": "I-language-theme",
+      "validation": {
+        "status": "WARNING",
+        "hash": "daaec44fd8ab6fef",
+        "id": "daaec44fd8ab6fef-98606775-97f8-4ffd-a14f-ec10c17ca670",
+        "evidence": "payload:pass:59-bytes|decode:pass:payload-match:jsqr;readers:jsqr+zxing|contrast:pass:minimum-4.10|quietZone:pass:9.50-modules|logo:warning:12.25%-ecc-H-padding-0|finder:warning:corner-contrast-pass;logo-centered-0.35|density:pass:45-modules;8.00px;59-bytes;ecc-H|format:pass:signature-and-structure-valid",
+        "previewNodes": 1
+      },
+      "file": {
+        "path": "I-final-35.png",
+        "sha256": "7f74f8bc5503b5411283643ce1ef913d42f8e0f6e73f09b670fbd03fccd1872a",
+        "bytes": 45152,
+        "dimensions": "512x512",
+        "jsqr": "PASS"
+      }
+    },
+    {
+      "scenario": "J-offline",
+      "validation": {
+        "status": "WARNING",
+        "hash": "daaec44fd8ab6fef",
+        "id": "daaec44fd8ab6fef-5b5d740e-9a7d-43ea-8816-d12ca2dcc0e3",
+        "evidence": "payload:pass:59-bytes|decode:pass:payload-match:jsqr;readers:jsqr+zxing|contrast:pass:minimum-4.10|quietZone:pass:9.50-modules|logo:warning:12.25%-ecc-H-padding-0|finder:warning:corner-contrast-pass;logo-centered-0.35|density:pass:45-modules;8.00px;59-bytes;ecc-H|format:pass:signature-and-structure-valid",
+        "previewNodes": 1
+      },
+      "file": {
+        "path": "J-final-35.png",
+        "sha256": "7f74f8bc5503b5411283643ce1ef913d42f8e0f6e73f09b670fbd03fccd1872a",
+        "bytes": 45152,
+        "dimensions": "512x512",
+        "jsqr": "PASS"
+      }
+    }
+  ],
+  "finalConfigurationHashes": [
+    "daaec44fd8ab6fef"
+  ],
+  "finalPngHashes": [
+    "7f74f8bc5503b5411283643ce1ef913d42f8e0f6e73f09b670fbd03fccd1872a"
+  ],
+  "runtimeErrors": []
+}

@@ -5,7 +5,7 @@ import { getContentKind } from '../../utils/content'
 import { Icons } from '../../components/icons'
 import type { LogoGuardState, QrDesignSettings } from '../../types/qr'
 import { verifyQrImage } from '../quality/decodeValidation'
-import { appendPreparedQr, prepareQrEngine } from './qrEngine'
+import { appendPreparedQr, prepareQrEngineAsync } from './qrEngine'
 import { QR_SIZE } from './qrOptions'
 
 interface QRPreviewProps {
@@ -19,6 +19,7 @@ export function QRPreview({ value, settings, onLogoGuardChange, onOpenExport }: 
   const { t } = useApp()
   const containerRef = useRef<HTMLDivElement>(null)
   const qrRef = useRef<QRCodeStyling | null>(null)
+  const renderSequence = useRef(0)
   const [error, setError] = useState<string | null>(null)
   const [moduleCount, setModuleCount] = useState<number | null>(null)
   const [previewZoom, setPreviewZoom] = useState<'fit' | 1 | 1.5 | 2>('fit')
@@ -36,15 +37,12 @@ export function QRPreview({ value, settings, onLogoGuardChange, onOpenExport }: 
       return
     }
 
-    let cancelled = false
-    try {
-      const { engine: qr, moduleCount: count } = prepareQrEngine(normalizedValue, settings, QR_SIZE)
-      void appendPreparedQr(qr, container).then(() => { if (!cancelled) { qrRef.current = qr; setModuleCount(count) } }).catch(() => { if (!cancelled) setError(t('generationError')) })
-    } catch {
-      qrRef.current = null
-      queueMicrotask(() => setError(t('generationError')))
-    }
-    return () => { cancelled = true }
+    const request = ++renderSequence.current
+    void prepareQrEngineAsync(normalizedValue, settings, QR_SIZE).then(async ({ engine: qr, moduleCount: count }) => {
+      await appendPreparedQr(qr, container, () => request === renderSequence.current)
+      if (request === renderSequence.current) { qrRef.current = qr; setModuleCount(count) }
+    }).catch(() => { if (request === renderSequence.current) setError(t('generationError')) })
+    return () => { renderSequence.current += 1 }
   }, [normalizedValue, settings, t])
 
   useEffect(() => {
@@ -53,7 +51,7 @@ export function QRPreview({ value, settings, onLogoGuardChange, onOpenExport }: 
     const timer = window.setTimeout(async () => {
       onLogoGuardChange('checking')
       try {
-        const { engine } = prepareQrEngine(normalizedValue, settings, 512)
+        const { engine } = await prepareQrEngineAsync(normalizedValue, settings, 512)
         const raw = await engine.getRawData('png')
         if (!(raw instanceof Blob)) throw new Error('missing-png')
         const bitmap = await createImageBitmap(raw)

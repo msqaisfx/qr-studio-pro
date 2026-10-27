@@ -1,7 +1,7 @@
 {
   "name": "qr-studio-pro",
   "private": true,
-  "version": "0.9.6-beta.1",
+  "version": "0.9.7-beta.1",
   "description": "Professional local-first open-source QR code designer",
   "license": "MIT",
   "homepage": "https://msqaisfx.github.io/qr-studio-pro/",

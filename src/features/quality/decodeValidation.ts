@@ -15,7 +15,7 @@ export function classifyDecodeResults(expected: string, results: Array<{ reader:
   const accepted = new Set([expected, encodeQrData(expected)])
   const match = results.find((result) => result.value !== null && accepted.has(result.value))
   const readers = [...new Set(results.filter((result) => result.completed).map((result) => result.reader))]
-  if (match) return { status: 'pass', matchedPayload: match.value, evidence: `payload-match:${match.reader}`, readers, attempts: results.length }
+  if (match) return { status: 'pass', matchedPayload: match.value, evidence: `payload-match:${match.reader};readers:${readers.join('+')}`, readers, attempts: results.length }
   const mismatch = results.find((result) => result.value !== null)
   if (mismatch) return { status: 'fail', matchedPayload: mismatch.value, evidence: `payload-mismatch:${mismatch.reader}`, readers, attempts: results.length }
   if (readers.length >= 2) return { status: 'fail', matchedPayload: null, evidence: `confirmed-no-decode:${readers.join('+')}`, readers, attempts: results.length }
@@ -58,15 +58,12 @@ export async function verifyQrImage(source: CanvasImageSource & { width: number;
       const image = context.getImageData(0, 0, canvas.width, canvas.height)
       const decoded = jsQR(image.data, image.width, image.height, { inversionAttempts: 'attemptBoth' })
       results.push({ reader: 'jsqr', value: decoded?.data ?? null, completed: true })
-      const classified = classifyDecodeResults(expected, results)
-      if (classified.status === 'pass' || classified.evidence.startsWith('payload-mismatch')) return classified
     }
   }
   try {
     for (const canvas of canvases) {
       results.push({ reader: 'zxing', value: await decodeWithZxing(canvas), completed: true })
-      const classified = classifyDecodeResults(expected, results)
-      if (classified.status === 'pass' || classified.evidence.startsWith('payload-mismatch')) return classified
+      if (results.at(-1)?.value !== null) break
     }
   } catch { results.push({ reader: 'zxing', value: null, completed: false }) }
   return classifyDecodeResults(expected, results)

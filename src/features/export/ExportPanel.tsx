@@ -3,7 +3,8 @@ import type QRCodeStyling from 'qr-code-styling'
 import { useApp } from '../../app/appContext'
 import { Icons } from '../../components/icons'
 import type { QrDesignSettings } from '../../types/qr'
-import { appendPreparedQr, prepareQrEngine } from '../qr/qrEngine'
+import { createDesignSnapshot, stableConfigurationHash } from '../qr/designSnapshot'
+import { appendPreparedQr, prepareQrEngineAsync } from '../qr/qrEngine'
 import { createExportFile, downloadExportFile, resolveExportSettings } from './exportEngine'
 import { validateExportFile } from './fileValidation'
 import { sanitizeFilename } from './filename'
@@ -18,11 +19,20 @@ export function ExportPanel({ payload, settings, options: controlledOptions, onO
   const [localOptions, setLocalOptions] = useState<ExportOptions>({ ...defaultExportOptions, resolution: settings.exportSize })
   const options=controlledOptions??localOptions
   const [state, setState] = useState<'idle' | 'working' | 'valid' | 'warning' | 'unsafe' | 'unknown' | 'error'>('idle')
+  const [stateHash, setStateHash] = useState('')
+  const [snapshotId, setSnapshotId] = useState('')
   const [validationEvidence, setValidationEvidence] = useState('')
   const [failureKind, setFailureKind] = useState<'render' | 'integrity' | 'decode' | 'mismatch' | 'verification' | null>(null)
   const previewRef = useRef<HTMLDivElement>(null)
   const engineRef = useRef<QRCodeStyling | null>(null)
+  const previewSequence = useRef(0)
+  const validationSequence = useRef(0)
   const safeName = useMemo(() => sanitizeFilename(options.filename, options.format), [options.filename, options.format])
+  const { filename: _filename, ...renderOptions } = options
+  void _filename
+  const configurationHash = stableConfigurationHash(payload, settings, renderOptions)
+  const currentHashRef = useRef(configurationHash)
+  const effectiveState = stateHash === configurationHash ? state : 'idle'
   const update = <K extends keyof ExportOptions>(key: K, value: ExportOptions[K]) => { const next={...options,[key]:value}; if(onOptionsChange)onOptionsChange(next);else setLocalOptions(next) }
 
   useEffect(() => {
@@ -30,43 +40,55 @@ export function ExportPanel({ payload, settings, options: controlledOptions, onO
     if (!container) return
     container.replaceChildren(); engineRef.current = null
     if (!payload) return
-    let cancelled = false
-    try {
-      const previewSettings = options.backgroundMode === 'transparent'
+    const request = ++previewSequence.current
+    const previewSettings = options.backgroundMode === 'transparent'
         ? { ...settings, background: { ...settings.background, transparent: true } }
         : options.backgroundMode === 'white' || options.backgroundMode === 'custom'
           ? { ...settings, background: { color: options.backgroundMode === 'white' ? '#ffffff' : options.backgroundColor, transparent: false } }
           : settings
-      const { engine } = prepareQrEngine(payload, previewSettings, 220)
-      void appendPreparedQr(engine, container).then(() => { if (!cancelled) engineRef.current = engine }).catch(() => { if (!cancelled) setState('error') })
-    } catch { queueMicrotask(() => setState('error')) }
-    return () => { cancelled = true }
+    void prepareQrEngineAsync(payload, previewSettings, 220).then(async ({ engine }) => {
+      await appendPreparedQr(engine, container, () => request === previewSequence.current)
+      if (request === previewSequence.current) engineRef.current = engine
+    }).catch(() => { if (request === previewSequence.current) setState('error') })
+    return () => { previewSequence.current += 1 }
   }, [payload, settings, options.backgroundMode, options.backgroundColor])
 
+  useEffect(() => {
+    currentHashRef.current = configurationHash
+    validationSequence.current += 1
+  }, [configurationHash])
+
   async function exportFile() {
-    if (!payload || state === 'working') return
+    if (!payload || effectiveState === 'working') return
+    setStateHash(configurationHash)
     setState('working')
     setValidationEvidence('')
     setFailureKind(null)
+    const request = ++validationSequence.current
+    const snapshot = createDesignSnapshot(payload, settings, renderOptions)
+    setSnapshotId(snapshot.id)
+    const isCurrent = () => request === validationSequence.current && snapshot.configurationHash === currentHashRef.current
     try {
-      const file = await createExportFile(payload, settings, options)
+      const file = await createExportFile(snapshot.payload, snapshot.settings, structuredClone(options))
+      if (!isCurrent()) return
       try { await validateExportFile(file, options.format) }
       catch (error) { setFailureKind('integrity'); throw error }
-      const report = await runQualityGuard(payload, resolveExportSettings(settings, options), file.width ?? options.resolution, true, file.scanSource)
-      setValidationEvidence(report.checks.filter((check) => check.status !== 'pass').map((check) => `${check.id}:${check.status}:${check.evidence}`).join('|'))
+      const report = await runQualityGuard(snapshot.payload, resolveExportSettings(snapshot.settings, options), file.width ?? options.resolution, true, file.scanSource)
+      if (!isCurrent()) return
+      setValidationEvidence(report.checks.map((check) => `${check.id}:${check.status}:${check.evidence}`).join('|'))
       if (report.overall === 'fail') {
         const decode = report.checks.find((check) => check.id === 'decode' || check.id === 'payload')
         setFailureKind(decode?.evidence.includes('mismatch') ? 'mismatch' : 'decode'); setState('unsafe'); return
       }
       if (report.overall === 'unknown') { setFailureKind('verification'); setState('unknown'); return }
       downloadExportFile(file); setState(report.overall === 'warning' ? 'warning' : 'valid')
-    } catch { setFailureKind((current) => current ?? 'render'); setState('error') }
+    } catch { if (isCurrent()) { setFailureKind((current) => current ?? 'render'); setState('error') } }
   }
 
   function applySaferSettings() {
     if (!onSettingsChange) return
     onSettingsChange({ ...settings, errorCorrectionLevel: 'H', logo: { ...settings.logo, size: Math.min(settings.logo.size, 0.2), sizeMode: 'manual', autoFit: false } })
-    setState('idle'); setValidationEvidence('')
+    setStateHash(configurationHash); setState('idle'); setValidationEvidence('')
   }
 
   return <section className="export-panel" aria-labelledby="export-heading">
@@ -82,9 +104,9 @@ export function ExportPanel({ payload, settings, options: controlledOptions, onO
     <div className="export-preview"><div ref={previewRef} /><span><strong>{t('exportPreview')}</strong><small>{options.format.toUpperCase()} · {options.format === 'svg' ? t('vectorFormat') : `${options.resolution}px`} · {safeName}</small></span></div>
     {settings.logo.enabled && options.format === 'svg' && <p className="export-note">{t('svgRasterLogoNote')}</p>}
     {options.format === 'pdf' && <p className="export-note">{t('pdfRasterNote')}</p>}
-    <div className={`export-validation ${state}`} data-validation-evidence={validationEvidence} role="status" aria-live="polite"><strong>{state === 'valid' ? 'PASS' : state === 'warning' ? 'WARNING' : state === 'unsafe' ? 'FAIL' : state === 'unknown' || state === 'error' ? 'UNKNOWN' : ''}</strong>{state === 'working' ? t('exportWorking') : state === 'valid' ? t('exportValidated') : state === 'warning' ? t('exportWarningAllowed') : state === 'unsafe' ? t(failureKind === 'mismatch' ? 'exportPayloadMismatch' : 'exportDecodeFailed') : state === 'unknown' ? t('exportUnknownBlocked') : state === 'error' ? t(failureKind === 'integrity' ? 'exportIntegrityFailed' : 'exportRenderFailed') : t('exportValidationReady')}</div>
-    {state === 'unsafe' && settings.logo.enabled && onSettingsChange && <button className="text-button" type="button" onClick={applySaferSettings}>{t('applySaferSettings')}</button>}
-    <button className="download-button export-download" type="button" disabled={!payload || state === 'working'} onClick={exportFile}><Icons.download />{state === 'working' ? t('exportWorking') : t('downloadFile')}</button>
+    <div className={`export-validation ${effectiveState}`} data-snapshot-id={stateHash === configurationHash ? snapshotId : ''} data-snapshot-hash={configurationHash} data-validation-evidence={stateHash === configurationHash ? validationEvidence : ''} role="status" aria-live="polite"><strong>{effectiveState === 'valid' ? 'PASS' : effectiveState === 'warning' ? 'WARNING' : effectiveState === 'unsafe' ? 'FAIL' : effectiveState === 'unknown' || effectiveState === 'error' ? 'UNKNOWN' : ''}</strong>{effectiveState === 'working' ? t('exportWorking') : effectiveState === 'valid' ? t('exportValidated') : effectiveState === 'warning' ? t('exportWarningAllowed') : effectiveState === 'unsafe' ? t(failureKind === 'mismatch' ? 'exportPayloadMismatch' : 'exportDecodeFailed') : effectiveState === 'unknown' ? t('exportUnknownBlocked') : effectiveState === 'error' ? t(failureKind === 'integrity' ? 'exportIntegrityFailed' : 'exportRenderFailed') : t('exportValidationReady')}</div>
+    {effectiveState === 'unsafe' && settings.logo.enabled && onSettingsChange && <button className="text-button" type="button" onClick={applySaferSettings}>{t('applySaferSettings')}</button>}
+    <button className="download-button export-download" type="button" disabled={!payload || effectiveState === 'working'} onClick={exportFile}><Icons.download />{effectiveState === 'working' ? t('exportWorking') : t('downloadFile')}</button>
     <p className="field-hint">{t('exportPrivacy')}</p>
   </section>
 }
