@@ -28,6 +28,7 @@ describe('QR Studio Pro', () => {
 
   it('shows a clear empty state and disables download', () => {
     renderApp()
+    expect(document.querySelector('.app-shell')).toHaveAttribute('data-app-ready', 'true')
     expect(screen.getByText('ابدأ بكتابة محتوى')).toBeInTheDocument()
     expect(screen.getAllByRole('button', { name: 'فتح استوديو التصدير' }).find((button) => button.classList.contains('download-button'))).toBeDisabled()
   })
