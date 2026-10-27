@@ -17,7 +17,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#07110f' : '#f4f7f6')
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#0b1b33' : '#f5f8fc')
   }, [theme])
 
   const t = useCallback((key: TranslationKey) => translations[language][key], [language])

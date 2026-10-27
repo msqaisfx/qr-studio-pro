@@ -40,6 +40,19 @@ describe('QR Studio Pro', () => {
     expect(screen.getAllByRole('button', { name: 'فتح استوديو التصدير' }).find((button) => button.classList.contains('download-button'))).toBeEnabled()
   })
 
+  it('changes preview zoom without changing the QR payload or export size', async () => {
+    const user = userEvent.setup()
+    renderApp()
+    const input = screen.getByRole('textbox', { name: 'رابط الموقع' })
+    await user.type(input, 'https://example.com/zoom-safe')
+    const artboard = document.querySelector('.qr-artboard')
+    await user.click(screen.getByRole('button', { name: '150%' }))
+    expect(artboard).toHaveAttribute('data-preview-zoom', '1.5')
+    expect(input).toHaveValue('https://example.com/zoom-safe')
+    await user.click(screen.getByRole('button', { name: 'إعادة' }))
+    expect(artboard).toHaveAttribute('data-preview-zoom', 'fit')
+  })
+
   it('switches language, direction, and persists the choice', async () => {
     const user = userEvent.setup()
     renderApp()
