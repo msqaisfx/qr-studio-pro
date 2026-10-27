@@ -2,9 +2,27 @@
 
 مصمم رموز QR احترافي ومفتوح المصدر، يركز على الخصوصية وتجربة استخدام نظيفة.
 
-> نسخة تجريبية عامة — الإصدار 0.9.0-beta.1
+[![الجودة](https://github.com/msqaisfx/qr-studio-pro/actions/workflows/quality.yml/badge.svg?branch=main)](https://github.com/msqaisfx/qr-studio-pro/actions/workflows/quality.yml)
+[![ترخيص MIT](https://img.shields.io/github/license/msqaisfx/qr-studio-pro)](LICENSE)
+[![أحدث إصدار](https://img.shields.io/github/v/release/msqaisfx/qr-studio-pro?include_prereleases)](https://github.com/msqaisfx/qr-studio-pro/releases)
+[![PWA](https://img.shields.io/badge/PWA-installable-0b8f63)](https://msqaisfx.github.io/qr-studio-pro/)
+
+> نسخة تجريبية عامة — الإصدار المستهدف 0.9.1-beta.1
 
 [التطبيق](https://msqaisfx.github.io/qr-studio-pro/) · [المستودع](https://github.com/msqaisfx/qr-studio-pro) · [الإبلاغ عن مشكلة](https://github.com/msqaisfx/qr-studio-pro/issues)
+
+![QR Studio Pro مع استوديو الشعار الذكي 2.0](artifacts/smart-logo-v2/readme-hero.jpg)
+
+English documentation: [README.md](README.md)
+
+## استوديو الشعار الذكي 2.0
+
+- تحكم مستقل في حاوية الشعار وحجم الرسم المرئي والحشوة
+- نمطا احتواء وتغطية يحافظان على النسبة دون تمديد أو تشويه
+- قص الحواف الشفافة وإزالة الخلفية الموحدة المتصلة بالحواف محليًا
+- أنماط نظيف ومتناغم وشارة مع الشكل والاستدارة واللون والشفافية
+- مقارنة الأصل بالنتيجة والتراجع وإعادة الضبط وتحذير الدقة وفحص فك القراءة
+- ترحيل بإصدار واضح يحافظ على الشعارات المضمنة في المشاريع القديمة
 
 ## المزايا
 
@@ -17,7 +35,7 @@
 - منطقة هادئة محسوبة من أربع وحدات ودعم UTF-8 متحقق منه
 - ألوان موحدة أو متدرجة ومستقلة للوحدات والزوايا، مع خلفية موحدة أو شفافة
 - تسعة تصاميم لونية فعلية ومراقب استرشادي لتباين جميع نقاط التدرج
-- معالجة محلية لشعارات PNG/JPEG/WebP بأشكال وخلفيات وحشوة آمنة وحارس فك قراءة مستقل
+- معالجة محلية لشعارات PNG/JPEG/WebP مع القص وإزالة الخلفية والتحجيم الآمن وأنماط الدمج وحارس فك قراءة مستقل
 - أحد عشر نوع محتوى بترميز محلي: موقع ونص وWi-Fi وvCard وواتساب وبريد وهاتف وSMS وموقع جغرافي وحدث وعملات رقمية
 - استوديو تصدير موحد بأسماء آمنة ودقات 256–4096 بكسل وSVG وتحكم بالجودة والشفافية وإعدادات صفحات الطباعة
 - حارس قراءة محلي بفك ترميز مستقل وفحص فعلي للمنطقة الهادئة والكثافة والتباين والشعار وأنماط الباحث وصيغة التصدير
@@ -58,6 +76,20 @@ pnpm verify:phase10
 pnpm verify:phase11
 ```
 
+## لقطات فعلية
+
+| قبل وبعد | النمط المتناغم | إزالة الخلفية |
+| --- | --- | --- |
+| ![قبل وبعد](artifacts/smart-logo-v2/before-after.jpg) | ![الشعار المتناغم](artifacts/smart-logo-v2/seamless-style.jpg) | ![الخلفية بعد الإزالة](artifacts/smart-logo-v2/background-removed.jpg) |
+
+## PWA والخصوصية
+
+يمكن تثبيت التطبيق من قائمة المتصفح بعد فتح [النسخة الحية](https://msqaisfx.github.io/qr-studio-pro/). بعد التخزين المؤقت تعمل الواجهة والمشاريع المحلية والتوليد وحارس القراءة والتصدير دون اتصال. تبقى بيانات QR والمشاريع والشعارات داخل المتصفح دون Analytics أو Tracking. يؤدي مسح بيانات الموقع إلى حذف مشاريع IndexedDB المحلية، ولا تنتقل المشاريع تلقائيًا بين النطاقات.
+
+## خارطة الطريق والقيود المعروفة
+
+توجد المراحل المنجزة وخارطة النسخة التجريبية في [docs/PHASES.md](docs/PHASES.md). نجاح فك القراءة الآلي دليل وليس ضمانًا لكل كاميرا أو سطح طباعة أو إضاءة. يتعامل مزيل الخلفية عمدًا مع الخلفيات شبه الموحدة المتصلة بالحواف؛ أما الخلفيات الفوتوغرافية المعقدة فتحتاج محررًا متخصصًا.
+
 ## نطاق المرحلة
 
 لا يتضمن هذا الإصدار Backend أو قاعدة بيانات خادمية أو حسابات أو إحصائيات أو دفعًا أو QR ديناميكيًا أو إطارات. راجع [docs/PHASES.md](docs/PHASES.md) و[docs/PWA_AND_OFFLINE.md](docs/PWA_AND_OFFLINE.md) و[docs/LOCAL_PROJECTS.md](docs/LOCAL_PROJECTS.md) و[docs/SCAN_GUARD.md](docs/SCAN_GUARD.md).
@@ -69,5 +101,3 @@ pnpm verify:phase11
 ## الترخيص
 
 MIT © 2026 Mohammed Qais Abdulghani — محمد قيس عبد الغني. راجع [LICENSE](LICENSE).
-
-English documentation: [README.md](README.md)

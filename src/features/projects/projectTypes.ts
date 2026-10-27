@@ -2,7 +2,7 @@ import type { ContentWorkspace, ContentType } from '../content/contentTypes'
 import type { ExportOptions } from '../export/exportTypes'
 import type { QrDesignSettings } from '../../types/qr'
 
-export const PROJECT_SCHEMA_VERSION = 1 as const
+export const PROJECT_SCHEMA_VERSION = 2 as const
 export const PROJECT_FILE_KIND = 'qr-studio-pro-project' as const
 
 export interface ProjectSnapshot {
