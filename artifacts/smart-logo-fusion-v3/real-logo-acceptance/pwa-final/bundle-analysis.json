@@ -1,0 +1,22 @@
+{
+  "before": {
+    "initialBytes": 507111,
+    "initialGzipBytes": 163480
+  },
+  "after": {
+    "initialBytes": 467970,
+    "initialGzipBytes": 153840
+  },
+  "reductionBytes": 39141,
+  "reductionGzipBytes": 9640,
+  "lazyChunks": [
+    "ProjectsPanel",
+    "TemplatesPanel",
+    "ShapesPanel",
+    "ColorsPanel",
+    "LogoPanel",
+    "QualityPanel",
+    "ExportPanel",
+    "PDF/es"
+  ]
+}
