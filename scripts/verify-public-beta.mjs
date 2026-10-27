@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process'
 import { mkdir, readdir, stat, writeFile } from 'node:fs/promises'
+import { closeWebSocket, createDeadline, stopChildProcess } from './lib/runtime-cleanup.mjs'
 
 const base = new URL(process.argv[2] ?? 'https://msqaisfx.github.io/qr-studio-pro/')
 const chromePath = process.env.CHROME_PATH ?? 'google-chrome'
@@ -7,8 +8,26 @@ const temp = `/tmp/qr-studio-public-${Date.now()}`
 const downloads = `${temp}/downloads`
 await mkdir(downloads, { recursive: true })
 
+const maximumRuntimeMs = Number(process.env.PUBLIC_VERIFY_TIMEOUT_MS ?? 120_000)
+let socket
+let chrome
+let timedOut = false
+const cancelDeadline = createDeadline(maximumRuntimeMs, () => {
+  timedOut = true
+  socket?.close()
+  chrome?.kill('SIGTERM')
+})
+
+const assertWithinDeadline = () => {
+  if (timedOut) throw new Error(`public verification timed out after ${maximumRuntimeMs}ms`)
+}
+
 const request = async (url) => {
-  const response = await fetch(url, { redirect: 'follow' })
+  assertWithinDeadline()
+  const response = await fetch(url, {
+    redirect: 'follow',
+    headers: { connection: 'close' },
+  })
   if (!response.ok) throw new Error(`${response.status} ${url}`)
   return response
 }
@@ -25,7 +44,7 @@ if (!worker.includes('qr-studio-') || !worker.includes('SKIP_WAITING')) throw ne
 for (const path of assetPaths) await request(new URL(path, base))
 
 const chromePort = 9374
-const chrome = spawn(chromePath, [
+chrome = spawn(chromePath, [
   '--headless=new', '--hide-scrollbars', '--disable-gpu', '--no-sandbox', '--no-first-run',
   '--no-default-browser-check', `--remote-debugging-port=${chromePort}`, `--user-data-dir=${temp}/profile`, base.href,
 ], { stdio: 'ignore' })
@@ -40,7 +59,7 @@ for (let index = 0; index < 200; index += 1) {
 }
 const target = targets?.find((item) => item.type === 'page')
 if (!target) throw new Error('Chrome did not start')
-const socket = new WebSocket(target.webSocketDebuggerUrl)
+socket = new WebSocket(target.webSocketDebuggerUrl)
 await new Promise((resolve, reject) => {
   socket.addEventListener('open', resolve, { once: true })
   socket.addEventListener('error', reject, { once: true })
@@ -63,6 +82,18 @@ const send = (method, params = {}) => new Promise((resolve, reject) => {
   pending.set(messageId, { resolve, reject })
   socket.send(JSON.stringify({ id: messageId, method, params }))
 })
+const closeBrowserSession = async () => {
+  if (!socket || socket.readyState !== WebSocket.OPEN) return
+  let timer
+  await Promise.race([
+    send('Browser.close').catch(() => undefined),
+    new Promise((resolve) => {
+      timer = setTimeout(resolve, 1_000)
+      timer.unref?.()
+    }),
+  ])
+  clearTimeout(timer)
+}
 const evaluate = async (expression) => {
   const response = await send('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true })
   if (response.exceptionDetails) {
@@ -72,6 +103,7 @@ const evaluate = async (expression) => {
 }
 const waitFor = async (expression, label) => {
   for (let index = 0; index < 200; index += 1) {
+    assertWithinDeadline()
     if (await evaluate(expression)) return
     await sleep(100)
   }
@@ -139,6 +171,11 @@ try {
   if (process.env.GITHUB_STEP_SUMMARY) await writeFile(process.env.GITHUB_STEP_SUMMARY, `## Public beta smoke test\n\n\`\`\`json\n${JSON.stringify(report, null, 2)}\n\`\`\`\n`)
   console.log(JSON.stringify(report, null, 2))
 } finally {
-  socket.close()
-  chrome.kill('SIGTERM')
+  await closeBrowserSession()
+  const socketClosed = await closeWebSocket(socket)
+  const chromeStopped = await stopChildProcess(chrome)
+  cancelDeadline()
+  if (!socketClosed || !chromeStopped) {
+    throw new Error(`public verification cleanup failed: websocket=${socketClosed}, chrome=${chromeStopped}`)
+  }
 }
