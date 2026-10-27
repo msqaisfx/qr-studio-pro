@@ -30,9 +30,9 @@ export async function findMaximumReadableLogoSize(payload: string, settings: QrD
   const attempts: LogoFitAttempt[] = []
   const rendered = new Set<string>()
   const moduleCount = prepareQrEngine(payload, settings, 256).moduleCount
-  const candidates = buildLogoFitCandidates(moduleCount, settings.errorCorrectionLevel, settings.logo.width / Math.max(1, settings.logo.height), settings.logo.adaptiveZone)
+  const candidates = buildLogoFitCandidates(moduleCount, settings.errorCorrectionLevel, settings.logo.width / Math.max(1, settings.logo.height), false)
   for (const { requestedSize, appliedSize } of candidates) {
-    const candidate = { ...settings, logo: { ...settings.logo, size: appliedSize } }
+    const candidate = { ...settings, logo: { ...settings.logo, size: requestedSize, sizeMode: 'manual' as const } }
     const result = await renderAndDecode(payload, candidate).catch(() => ({ readable: false, renderFingerprint: '' }))
     if (result.renderFingerprint && rendered.has(result.renderFingerprint)) { await yieldToBrowser(); continue }
     if (result.renderFingerprint) rendered.add(result.renderFingerprint)

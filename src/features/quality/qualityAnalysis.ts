@@ -1,5 +1,6 @@
 import type { QrDesignSettings } from '../../types/qr'
 import { minimumContrast } from '../qr/colorUtils'
+import { resolveLogoGeometry } from '../qr/logoUtils'
 import type { QualityCheck, QualityReport, QualityStatus, QualitySuggestion } from './qualityTypes'
 
 export interface RenderEvidence {
@@ -26,7 +27,10 @@ export function contrastEvidence(settings: QrDesignSettings): { status: QualityS
 export function buildQualityReport(payload: string, settings: QrDesignSettings, evidence: RenderEvidence): QualityReport {
   const bytes = new TextEncoder().encode(payload).length
   const contrast = contrastEvidence(settings)
-  const coverage = settings.logo.enabled ? settings.logo.size ** 2 * 100 : 0
+  const appliedLogoSize = settings.logo.enabled && evidence.moduleCount
+    ? resolveLogoGeometry(settings.logo, evidence.moduleCount, settings.errorCorrectionLevel, settings.logo.width / Math.max(1, settings.logo.height)).appliedSize
+    : settings.logo.size
+  const coverage = settings.logo.enabled ? appliedLogoSize ** 2 * 100 : 0
   const checks: QualityCheck[] = []
   checks.push({ id: 'payload', status: payload.trim() ? 'pass' : 'fail', evidence: payload.trim() ? `${bytes}-bytes` : 'empty' })
   checks.push({ id: 'decode', status: evidence.decoded === null ? 'unknown' : evidence.decoded && evidence.payloadMatches ? 'pass' : 'fail', evidence: evidence.decoded === null ? 'unavailable' : evidence.decoded && evidence.payloadMatches ? 'payload-match' : 'decode-or-match-failed' })
@@ -35,7 +39,7 @@ export function buildQualityReport(payload: string, settings: QrDesignSettings, 
   const logoRisk = settings.logo.enabled && (coverage > 6.25 || settings.logo.padding > 16 || settings.errorCorrectionLevel !== 'H')
   checks.push({ id: 'logo', status: !settings.logo.enabled ? 'pass' : logoRisk ? 'warning' : 'pass', evidence: !settings.logo.enabled ? 'none' : `${coverage.toFixed(2)}%-ecc-${settings.errorCorrectionLevel}-padding-${settings.logo.padding}` })
   const cornerContrast = contrastEvidence({ ...settings, bodyColor: settings.cornerSquareColor }).status
-  checks.push({ id: 'finder', status: cornerContrast === 'fail' ? 'fail' : cornerContrast === 'unknown' ? 'unknown' : settings.logo.size > 0.3 ? 'warning' : cornerContrast, evidence: `corner-contrast-${cornerContrast};logo-centered-${settings.logo.size.toFixed(2)}` })
+  checks.push({ id: 'finder', status: cornerContrast === 'fail' ? 'fail' : cornerContrast === 'unknown' ? 'unknown' : appliedLogoSize > 0.3 ? 'warning' : cornerContrast, evidence: `corner-contrast-${cornerContrast};logo-centered-${appliedLogoSize.toFixed(2)}` })
   const modulePixels = evidence.modulePixels
   const densityStatus: QualityStatus = modulePixels === null ? 'unknown' : modulePixels < 3 ? 'fail' : modulePixels < 5 || bytes > 800 ? 'warning' : 'pass'
   checks.push({ id: 'density', status: densityStatus, evidence: modulePixels === null ? 'unavailable' : `${evidence.moduleCount}-modules;${modulePixels.toFixed(2)}px;${bytes}-bytes;ecc-${settings.errorCorrectionLevel}` })

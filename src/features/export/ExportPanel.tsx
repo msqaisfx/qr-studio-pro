@@ -3,7 +3,7 @@ import type QRCodeStyling from 'qr-code-styling'
 import { useApp } from '../../app/appContext'
 import { Icons } from '../../components/icons'
 import type { QrDesignSettings } from '../../types/qr'
-import { prepareQrEngine } from '../qr/qrEngine'
+import { appendPreparedQr, prepareQrEngine } from '../qr/qrEngine'
 import { createExportFile, downloadExportFile, resolveExportSettings } from './exportEngine'
 import { validateExportFile } from './fileValidation'
 import { sanitizeFilename } from './filename'
@@ -29,6 +29,7 @@ export function ExportPanel({ payload, settings, options: controlledOptions, onO
     if (!container) return
     container.replaceChildren(); engineRef.current = null
     if (!payload) return
+    let cancelled = false
     try {
       const previewSettings = options.backgroundMode === 'transparent'
         ? { ...settings, background: { ...settings.background, transparent: true } }
@@ -36,8 +37,9 @@ export function ExportPanel({ payload, settings, options: controlledOptions, onO
           ? { ...settings, background: { color: options.backgroundMode === 'white' ? '#ffffff' : options.backgroundColor, transparent: false } }
           : settings
       const { engine } = prepareQrEngine(payload, previewSettings, 220)
-      engine.append(container); engineRef.current = engine
+      void appendPreparedQr(engine, container).then(() => { if (!cancelled) engineRef.current = engine }).catch(() => { if (!cancelled) setState('error') })
     } catch { queueMicrotask(() => setState('error')) }
+    return () => { cancelled = true }
   }, [payload, settings, options.backgroundMode, options.backgroundColor])
 
   async function exportFile() {

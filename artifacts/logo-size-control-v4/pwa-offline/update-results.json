@@ -1,0 +1,9 @@
+{
+  "updateDetectionImplemented": true,
+  "explicitUserAction": true,
+  "unsavedChangesBlockUpdate": true,
+  "skipWaitingMessageValidated": true,
+  "oldCacheCleanupValidated": true,
+  "indexedDbPreserved": true,
+  "indexedDbDeletionInWorker": false
+}

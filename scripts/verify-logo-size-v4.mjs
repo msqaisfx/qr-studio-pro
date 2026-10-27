@@ -1,0 +1,70 @@
+import { spawn, execFile as execFileCallback } from 'node:child_process'
+import { promisify } from 'node:util'
+import { createHash } from 'node:crypto'
+import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises'
+import { basename, join } from 'node:path'
+import { pathToFileURL } from 'node:url'
+import { PNG } from 'pngjs'
+import jsQR from 'jsqr'
+
+const execFile = promisify(execFileCallback)
+const sourcePath = process.env.QR_STUDIO_REAL_LOGO
+if (!sourcePath) throw new Error('QR_STUDIO_REAL_LOGO is required')
+const appUrl = process.env.QR_STUDIO_URL || 'http://127.0.0.1:5177/'
+const output = new URL('../artifacts/logo-size-control-v4/', import.meta.url).pathname
+const temporary = `/private/tmp/qr-studio-logo-v4-${Date.now()}`
+const downloads = join(temporary, 'downloads')
+await mkdir(output, { recursive: true }); await mkdir(downloads, { recursive: true })
+const source = await readFile(sourcePath); const sourceBase64 = source.toString('base64')
+const payload = 'https://msqaisfx.github.io/qr-studio-pro/'
+const chromePort = 9374
+const chrome = spawn('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', ['--headless=new','--hide-scrollbars','--disable-gpu','--no-first-run','--no-default-browser-check',`--remote-debugging-port=${chromePort}`,`--user-data-dir=${temporary}/profile`,appUrl], { stdio: 'ignore' })
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms)); let targets
+for (let index = 0; index < 100; index += 1) { try { targets = await (await fetch(`http://127.0.0.1:${chromePort}/json`)).json(); if (targets.length) break } catch {} await sleep(100) }
+const target = targets?.find((item) => item.type === 'page'); if (!target) throw new Error('Chrome unavailable')
+const socket = new WebSocket(target.webSocketDebuggerUrl); await new Promise((resolve, reject) => { socket.addEventListener('open', resolve, { once: true }); socket.addEventListener('error', reject, { once: true }) })
+let id = 0; const pending = new Map(); const runtimeErrors = []
+socket.addEventListener('message', ({ data }) => { const message = JSON.parse(data); if (message.method === 'Runtime.exceptionThrown') runtimeErrors.push(message.params.exceptionDetails.text); if (message.id && pending.has(message.id)) { const handler = pending.get(message.id); pending.delete(message.id); message.error ? handler.reject(new Error(message.error.message)) : handler.resolve(message.result) } })
+const send = (method, params = {}) => new Promise((resolve, reject) => { const messageId = ++id; pending.set(messageId, { resolve, reject }); socket.send(JSON.stringify({ id: messageId, method, params })) })
+const evaluate = async (expression) => { const response = await send('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true }); if (response.exceptionDetails) throw new Error(response.exceptionDetails.text); return response.result.value }
+const waitFor = async (expression, label, count = 300) => { for (let index = 0; index < count; index += 1) { if (await evaluate(expression)) return; await sleep(100) } throw new Error(`Timed out: ${label}`) }
+const screenshot = async (name) => { const result = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false, fromSurface: true }); await writeFile(join(output, name), Buffer.from(result.data, 'base64')) }
+const clickText = async (selector, label) => { const clicked = await evaluate(`(()=>{const e=[...document.querySelectorAll(${JSON.stringify(selector)})].find(x=>x.textContent.trim()===${JSON.stringify(label)});e?.click();return Boolean(e)})()`); if (!clicked) throw new Error(`Missing control: ${label}`); await sleep(500) }
+const upload = () => evaluate(`new Promise(resolve=>{const bytes=Uint8Array.from(atob(${JSON.stringify(sourceBase64)}),c=>c.charCodeAt(0));const d=new DataTransfer();d.items.add(new File([bytes],${JSON.stringify(basename(sourcePath))},{type:'image/png'}));document.querySelector('.logo-dropzone').dispatchEvent(new DragEvent('drop',{dataTransfer:d,bubbles:true}));resolve()})`)
+const setSize = async (percent) => { await evaluate(`(()=>{const e=document.querySelector('.logo-size-control input[type=range]');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(e,${JSON.stringify(String(percent))});e.dispatchEvent(new Event('input',{bubbles:true}));e.dispatchEvent(new Event('change',{bubbles:true}))})()`); await waitFor(`document.querySelector('.logo-size-control input[type=number]')?.value===${JSON.stringify(String(percent))}`, `size ${percent}`); await sleep(750) }
+const nextDownload = async (before, extension) => { for (let index = 0; index < 300; index += 1) { const names = await readdir(downloads); const found = names.find((name) => !before.has(name) && !name.endsWith('.crdownload') && name.toLowerCase().endsWith(`.${extension}`)); if (found) return join(downloads, found); await sleep(100) } throw new Error(`.${extension} download missing`) }
+const exportCurrent = async (format, filename, resolution = 512) => {
+  await evaluate(`document.querySelector('[data-tool="export"]').click()`); await waitFor(`Boolean(document.querySelector('.export-download'))`, 'export panel')
+  await evaluate(`document.querySelector('[data-export-format=${JSON.stringify(format)}]').click()`)
+  await waitFor(`document.querySelector('[data-export-format=${JSON.stringify(format)}]')?.getAttribute('aria-pressed')==='true'`, `${format} selected`)
+  if (format !== 'svg') await evaluate(`(()=>{const e=document.querySelector('#export-resolution');if(e){Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,'value').set.call(e,${JSON.stringify(String(resolution))});e.dispatchEvent(new Event('change',{bubbles:true}))}})()`)
+  await evaluate(`(()=>{const e=document.querySelector('#export-filename');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(e,${JSON.stringify(filename)});e.dispatchEvent(new Event('input',{bubbles:true}))})()`)
+  const before = new Set(await readdir(downloads)); await evaluate(`document.querySelector('.export-download').click()`)
+  const extension = format === 'jpeg' ? 'jpg' : format; const path = await nextDownload(before, extension); const bytes = await readFile(path); const destination = join(output, `${filename}.${extension}`); await writeFile(destination, bytes)
+  await evaluate(`document.querySelector('[data-tool="logo"]').click()`); await waitFor(`Boolean(document.querySelector('.logo-size-control')) && Boolean(document.querySelector('.qr-canvas svg'))`, 'logo panel and live preview')
+  return { format, path: destination, bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex') }
+}
+const decodePng = async (path) => { const png = PNG.sync.read(await readFile(path)); const result = jsQR(new Uint8ClampedArray(png.data.buffer, png.data.byteOffset, png.data.byteLength), png.width, png.height, { inversionAttempts: 'attemptBoth' }); return { pass: result?.data === payload, width: png.width, height: png.height, png } }
+const blueBounds = (png) => { let minX=png.width,minY=png.height,maxX=-1,maxY=-1,count=0; const lo=Math.floor(png.width*.25),hi=Math.ceil(png.width*.75); for(let y=lo;y<hi;y++)for(let x=lo;x<hi;x++){const o=(y*png.width+x)*4,r=png.data[o],g=png.data[o+1],b=png.data[o+2],a=png.data[o+3];if(a>180&&b>r+14&&b>g+5&&b>55){minX=Math.min(minX,x);minY=Math.min(minY,y);maxX=Math.max(maxX,x);maxY=Math.max(maxY,y);count++}} return maxX<0?null:{x:minX,y:minY,width:maxX-minX+1,height:maxY-minY+1,pixels:count,aspectRatio:Number(((maxX-minX+1)/(maxY-minY+1)).toFixed(3))} }
+const decodeOther = async (item) => {
+  if (item.format === 'png') return (await decodePng(item.path)).pass
+  if (item.format === 'jpeg' || item.format === 'webp') { const converted=join(temporary,`${item.format}.png`); await execFile('/usr/bin/sips',['-s','format','png',item.path,'--out',converted]); return (await decodePng(converted)).pass }
+  if (item.format === 'pdf') { const base=join(temporary,'pdf-page'); await execFile('pdftoppm',['-png','-f','1','-singlefile','-r','150',item.path,base]); return (await decodePng(`${base}.png`)).pass }
+  await send('Page.navigate',{url:pathToFileURL(item.path).href}); await sleep(900); const shot=await send('Page.captureScreenshot',{format:'png',fromSurface:true}); const rendered=join(temporary,'svg.png'); await writeFile(rendered,Buffer.from(shot.data,'base64')); const pass=(await decodePng(rendered)).pass; await send('Page.navigate',{url:appUrl}); await waitFor(`Boolean(document.querySelector('.app-shell'))`,'return from svg'); return pass
+}
+try {
+  await send('Page.enable'); await send('Runtime.enable'); await send('Browser.setDownloadBehavior', { behavior: 'allow', downloadPath: downloads }); await send('Emulation.setDeviceMetricsOverride',{width:1280,height:960,deviceScaleFactor:1,mobile:false})
+  await waitFor(`Boolean(document.querySelector('.app-shell'))`, 'app shell'); await evaluate(`localStorage.setItem('qr-studio-pro:language','en');localStorage.setItem('qr-studio-pro:theme','light');location.reload()`); await waitFor(`document.documentElement.lang==='en' && Boolean(document.querySelector('#content-url'))`, 'English UI')
+  await evaluate(`(()=>{const e=document.querySelector('#content-url');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(e,${JSON.stringify(payload)});e.dispatchEvent(new Event('input',{bubbles:true}));document.querySelector('[data-tool="shapes"]').click()})()`); await waitFor(`Boolean(document.querySelector('[data-error-level="H"]'))`,'shapes'); await evaluate(`document.querySelector('[data-error-level="H"]').click();document.querySelector('[data-tool="logo"]').click()`)
+  await waitFor(`Boolean(document.querySelector('.logo-dropzone'))`,'logo upload'); await upload(); await waitFor(`Boolean(document.querySelector('.logo-size-control')) && Boolean(document.querySelector('.logo-metrics'))`,'processed logo'); await screenshot('00-before-default-control.png')
+  await clickText('.logo-group button','Remove solid background'); await clickText('.logo-group button','Seamless Fusion'); await screenshot('01-after-prominent-size-control.png')
+  const sizes=[]; const hashes=new Set()
+  for(const requested of [10,15,20,25,30,35]){await setSize(requested);const ui=await evaluate(`({requested:document.querySelector('.logo-size-control input[type=number]').value,result:document.querySelector('.logo-size-result').textContent,mode:document.querySelector('.logo-size-modes .selected').textContent})`);const file=await exportCurrent('png',`logo-size-${requested}`,512);const decoded=await decodePng(file.path);const bounds=blueBounds(decoded.png);hashes.add(file.sha256);sizes.push({requestedSize:requested,appliedSize:Number((ui.result.match(/Applied visible size:\s*([\d.]+)/)||[])[1]),visibleLogoBounds:bounds,decodeStatus:decoded.pass?'PASS':'FAIL',sha256:file.sha256,file:basename(file.path)});await screenshot(`size-${requested}.png`)}
+  const livePreview=await evaluate(`({children:document.querySelector('.qr-canvas')?.childElementCount||0,svgLength:document.querySelector('.qr-canvas svg')?.outerHTML.length||0,rect:(()=>{const r=document.querySelector('.qr-canvas svg')?.getBoundingClientRect();return r?{width:r.width,height:r.height}:null})()})`)
+  await evaluate(`document.querySelector('.logo-size-modes button:nth-child(2)').click()`); await waitFor(`!document.querySelector('.logo-size-modes button:nth-child(2)')?.disabled && document.querySelector('.logo-size-modes .selected')?.textContent==='Auto Fit'`,'auto fit',500); const autoFit=await evaluate(`({selectedSize:Number(document.querySelector('.logo-size-control input[type=number]').value),summary:document.querySelector('.logo-size-control .field-hint')?.textContent||'',mode:document.querySelector('.logo-size-modes .selected')?.textContent})`)
+  await setSize(25); const exportedFiles=[]; for(const format of ['png','svg','webp','jpeg','pdf']) exportedFiles.push(await exportCurrent(format,`logo-size-v4-${format}`,512)); const exports=[]; for(const item of exportedFiles) exports.push({...item,path:basename(item.path),decodeStatus:(await decodeOther(item))?'PASS':'FAIL'})
+  await send('Page.navigate',{url:appUrl}); await waitFor(`Boolean(document.querySelector('.app-shell'))`,'app after exports')
+  const responsive=[]; for(const width of [375,768,1280,1920]){await send('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:width===375});await sleep(250);responsive.push({width,overflow:await evaluate(`document.documentElement.scrollWidth>document.documentElement.clientWidth`)});await screenshot(`responsive-${width}.png`)}
+  const report={source:{file:basename(sourcePath),sha256:createHash('sha256').update(source).digest('hex')},payload,sizes,distinctHashes:hashes.size,livePreview,autoFit,exports,responsive,runtimeErrors,referenceScreenshot:'NOT PROVIDED in this task; no fabricated comparison was made'}
+  await writeFile(join(output,'verification.json'),JSON.stringify(report,null,2)); if(runtimeErrors.length||hashes.size!==6||livePreview.children<1||livePreview.svgLength<100||sizes.some(x=>x.decodeStatus!=='PASS')||exports.some(x=>x.decodeStatus!=='PASS')||responsive.some(x=>x.overflow)||sizes.some(x=>!x.visibleLogoBounds)) throw new Error('Acceptance gate failed; inspect verification.json'); console.log(JSON.stringify(report,null,2))
+} finally { socket.close(); chrome.kill('SIGTERM') }
