@@ -9,6 +9,16 @@ describe('multi-reader QR decode policy', () => {
     ]).status).toBe('pass')
   })
 
+  it('accepts a matching second decoder even when the first decoder returned a mismatch', () => {
+    const result = classifyDecodeResults('expected', [
+      { reader: 'jsqr', value: 'incorrect', completed: true },
+      { reader: 'zxing', value: 'expected', completed: true },
+    ])
+    expect(result.status).toBe('pass')
+    expect(result.readers).toEqual(['jsqr', 'zxing'])
+    expect(result.evidence).toContain('payload-match:zxing')
+  })
+
   it('fails immediately on a decoded payload mismatch', () => {
     const result = classifyDecodeResults('expected', [{ reader: 'jsqr', value: 'other', completed: true }])
     expect(result.status).toBe('fail')

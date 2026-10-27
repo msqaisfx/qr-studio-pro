@@ -3,7 +3,7 @@ import type { QrDesignSettings } from '../../types/qr'
 import { createQrOptions } from './qrOptions'
 import { calculateQuietZone, getModuleCount, type QrEngineWithModules } from './quietZone'
 import { encodeQrData } from './encoding'
-import { getLogoVisualScale, resolveLogoGeometry } from './logoUtils'
+import { getLogoVisualScale, renderLogoDetailed, resolveLogoGeometry } from './logoUtils'
 
 export interface PreparedQr {
   engine: QRCodeStyling
@@ -12,9 +12,27 @@ export interface PreparedQr {
 }
 
 /** Waits for async image loading/extensions so an appended live preview is never an empty SVG. */
-export async function appendPreparedQr(engine: QRCodeStyling, container: HTMLElement): Promise<void> {
+export async function appendPreparedQr(engine: QRCodeStyling, container: HTMLElement, isCurrent: () => boolean = () => true): Promise<void> {
   if (typeof engine.getRawData === 'function') await engine.getRawData('svg')
-  if (container.isConnected) engine.append(container)
+  const staging = document.createElement('div')
+  engine.append(staging)
+  if (container.isConnected && isCurrent()) container.replaceChildren(...staging.childNodes)
+}
+
+/** Materializes the exact current logo from its original source at export-appropriate quality. */
+export async function materializeQrSettings(settings: QrDesignSettings, qrSize: number): Promise<QrDesignSettings> {
+  const snapshot = structuredClone(settings)
+  if (!snapshot.logo.enabled) return snapshot
+  if (!snapshot.logo.sourceDataUrl) throw new Error('logo-source-missing')
+  const target = Math.max(768, Math.ceil(qrSize * Math.min(0.5, snapshot.logo.size / Math.max(0.01, getLogoVisualScale(snapshot.logo.visibleSize, snapshot.logo.padding))) * 1.5))
+  const rendered = await renderLogoDetailed(snapshot.logo.sourceDataUrl, snapshot.logo, target)
+  snapshot.logo.renderedDataUrl = rendered.dataUrl
+  return snapshot
+}
+
+export async function prepareQrEngineAsync(data: string, settings: QrDesignSettings, size: number): Promise<PreparedQr & { settings: QrDesignSettings }> {
+  const materialized = await materializeQrSettings(settings, size)
+  return { ...prepareQrEngine(data, materialized, size), settings: materialized }
 }
 
 export function prepareQrEngine(data: string, settings: QrDesignSettings, size: number): PreparedQr {

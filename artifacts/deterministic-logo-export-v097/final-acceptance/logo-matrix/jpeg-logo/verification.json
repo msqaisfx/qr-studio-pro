@@ -1,0 +1,201 @@
+{
+  "source": {
+    "file": "jpeg-logo.jpg",
+    "mime": "image/jpeg",
+    "sha256": "64e95eeba478b033ead76eb80dd038666e51146d6ddbb786865efa1b56e264e3"
+  },
+  "payload": "https://msqaisfx.github.io/qr-studio-pro/",
+  "sizes": [
+    {
+      "requestedSize": 10,
+      "appliedSize": 10,
+      "visibleLogoBounds": {
+        "x": 238,
+        "y": 240,
+        "width": 36,
+        "height": 32,
+        "pixels": 359,
+        "aspectRatio": 1.125
+      },
+      "decodeStatus": "PASS",
+      "sha256": "cc89a38b4383a5183a868d2f88a3c8fe1575b1b6ed5cafc54a555160e5e386c8",
+      "file": "logo-size-10.png"
+    },
+    {
+      "requestedSize": 15,
+      "appliedSize": 15,
+      "visibleLogoBounds": {
+        "x": 230,
+        "y": 232,
+        "width": 53,
+        "height": 48,
+        "pixels": 676,
+        "aspectRatio": 1.104
+      },
+      "decodeStatus": "PASS",
+      "sha256": "4c1baa5b1233a108aff423a22852889540aed85de028fdea06ce882698c7973f",
+      "file": "logo-size-15.png"
+    },
+    {
+      "requestedSize": 20,
+      "appliedSize": 20,
+      "visibleLogoBounds": {
+        "x": 221,
+        "y": 224,
+        "width": 71,
+        "height": 65,
+        "pixels": 1197,
+        "aspectRatio": 1.092
+      },
+      "decodeStatus": "PASS",
+      "sha256": "fd262139a8101f27c346b7eef433eb0185d9750195b3a7c43f39df4609070e36",
+      "file": "logo-size-20.png"
+    },
+    {
+      "requestedSize": 25,
+      "appliedSize": 25,
+      "visibleLogoBounds": {
+        "x": 212,
+        "y": 215,
+        "width": 89,
+        "height": 82,
+        "pixels": 1820,
+        "aspectRatio": 1.085
+      },
+      "decodeStatus": "PASS",
+      "sha256": "3252698eda9cad60e42f81f959510d8f057f0d78b1d82fadd8c984c90ec70613",
+      "file": "logo-size-25.png"
+    },
+    {
+      "requestedSize": 30,
+      "appliedSize": 30,
+      "visibleLogoBounds": {
+        "x": 203,
+        "y": 208,
+        "width": 106,
+        "height": 97,
+        "pixels": 2297,
+        "aspectRatio": 1.093
+      },
+      "decodeStatus": "PASS",
+      "sha256": "8c44604eb81308305fbb63f6da037dcaaf412cdb469fcc18481fc6ca13656b40",
+      "file": "logo-size-30.png"
+    },
+    {
+      "requestedSize": 35,
+      "appliedSize": 35,
+      "visibleLogoBounds": {
+        "x": 194,
+        "y": 200,
+        "width": 124,
+        "height": 113,
+        "pixels": 3107,
+        "aspectRatio": 1.097
+      },
+      "decodeStatus": "PASS",
+      "sha256": "c9476b6bc367693d733122728f5e9a93893f1aa073e596789839927388641919",
+      "file": "logo-size-35.png"
+    }
+  ],
+  "resolutionMatrix": [
+    {
+      "resolution": 512,
+      "actualWidth": 512,
+      "actualHeight": 512,
+      "visibleLogoBounds": {
+        "x": 194,
+        "y": 200,
+        "width": 124,
+        "height": 113,
+        "pixels": 3107,
+        "aspectRatio": 1.097
+      },
+      "decodeStatus": "PASS",
+      "sha256": "c9476b6bc367693d733122728f5e9a93893f1aa073e596789839927388641919",
+      "file": "logo-quality-512.png"
+    },
+    {
+      "resolution": 1024,
+      "actualWidth": 1024,
+      "actualHeight": 1024,
+      "visibleLogoBounds": {
+        "x": 376,
+        "y": 388,
+        "width": 273,
+        "height": 249,
+        "pixels": 14179,
+        "aspectRatio": 1.096
+      },
+      "decodeStatus": "PASS",
+      "sha256": "92400a68700890221ae444acbfba60db85bced8de904f101ccff04370001eb93",
+      "file": "logo-quality-1024.png"
+    },
+    {
+      "resolution": 2048,
+      "actualWidth": 2048,
+      "actualHeight": 2048,
+      "visibleLogoBounds": {
+        "x": 751,
+        "y": 776,
+        "width": 546,
+        "height": 497,
+        "pixels": 55809,
+        "aspectRatio": 1.099
+      },
+      "decodeStatus": "PASS",
+      "sha256": "ebbb27bcd553a7df6cb69dfb00bc06dae9fbff69bc993a8c28a831852e6ae643",
+      "file": "logo-quality-2048.png"
+    },
+    {
+      "resolution": 4096,
+      "actualWidth": 4096,
+      "actualHeight": 4096,
+      "visibleLogoBounds": {
+        "x": 1490,
+        "y": 1540,
+        "width": 1117,
+        "height": 1018,
+        "pixels": 232866,
+        "aspectRatio": 1.097
+      },
+      "decodeStatus": "PASS",
+      "sha256": "ced583b2b04f95d6fa7a33fe750f91db2d2fc7bc08cf3d091d30a192f139803d",
+      "file": "logo-quality-4096.png"
+    }
+  ],
+  "distinctHashes": 6,
+  "livePreview": {
+    "children": 1,
+    "svgLength": 477758,
+    "rect": {
+      "width": 360,
+      "height": 360
+    }
+  },
+  "autoFit": {
+    "selectedSize": 35,
+    "summary": "7/9 candidate sizes decoded successfully",
+    "mode": "Auto Fit"
+  },
+  "exports": [],
+  "responsive": [
+    {
+      "width": 375,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "overflow": false
+    },
+    {
+      "width": 1920,
+      "overflow": false
+    }
+  ],
+  "runtimeErrors": [],
+  "referenceScreenshot": "NOT PROVIDED in this task; no fabricated comparison was made"
+}

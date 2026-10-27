@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState, type DragEvent } from 'react'
+import { useEffect, useId, useRef, useState, type Dispatch, type DragEvent, type SetStateAction } from 'react'
 import { useApp } from '../../app/appContext'
 import { Icons } from '../../components/icons'
 import { defaultQrDesignSettings, type LogoBackgroundMode, type LogoFit, type LogoGuardState, type LogoIntegrationStyle, type LogoShape, type QrDesignSettings, type QrLogoSettings } from '../../types/qr'
@@ -6,14 +6,14 @@ import { getFusionMetrics, getLogoQuality, isConservativeLogoSize, readLogoFile,
 import { findMaximumReadableLogoSize, type LogoFitAttempt } from './logoFit'
 import { prepareQrEngine } from './qrEngine'
 
-export function LogoPanel({ settings, onChange, guard, payload }: { settings: QrDesignSettings; onChange: (settings: QrDesignSettings) => void; guard: LogoGuardState; payload: string }) {
+export function LogoPanel({ settings, onChange, guard, payload }: { settings: QrDesignSettings; onChange: Dispatch<SetStateAction<QrDesignSettings>>; guard: LogoGuardState; payload: string }) {
   const { t } = useApp(); const inputId = useId(); const sequence = useRef(0); const history = useRef<QrLogoSettings[]>([])
   const [error, setError] = useState<string | null>(null); const [dragging, setDragging] = useState(false)
   const [analysis, setAnalysis] = useState<LogoVisualAnalysis | null>(null); const [finding, setFinding] = useState(false); const [attempts, setAttempts] = useState<LogoFitAttempt[]>([])
   const logo = settings.logo
   const commit = (patch: Partial<QrLogoSettings>, remember = true) => {
     if (remember) history.current.push(structuredClone(logo))
-    onChange({ ...settings, logo: { ...logo, ...patch } })
+    onChange((current) => ({ ...current, logo: { ...current.logo, ...patch } }))
   }
 
   useEffect(() => {
@@ -33,7 +33,7 @@ export function LogoPanel({ settings, onChange, guard, payload }: { settings: Qr
     try {
       const image = await readLogoFile(file)
       history.current = []
-      onChange({ ...settings, logo: { ...logo, ...image, fileName: file.name, enabled: true, renderedDataUrl: null } })
+      onChange((current) => ({ ...current, logo: { ...current.logo, ...image, fileName: file.name, enabled: true, renderedDataUrl: null } }))
     } catch (reason) {
       const code = reason instanceof Error ? reason.message : 'corrupt'
       setError(t(code === 'too-large' ? 'logoTooLarge' : code === 'dimensions' ? 'logoDimensions' : code === 'unsupported' ? 'logoUnsupported' : 'logoCorrupt'))
@@ -77,7 +77,7 @@ export function LogoPanel({ settings, onChange, guard, payload }: { settings: Qr
         {attempts.length > 0 && <p className="field-hint" role="status">{attempts.filter((attempt) => attempt.readable).length}/{attempts.length} {t('logoSizesReadable')}</p>}
       </section>
       <div className="logo-comparison" aria-label={t('logoPreview')}><figure className={logo.showContentBounds ? 'show-bounds' : ''}><div className="logo-bound-stage"><img src={logo.sourceDataUrl ?? ''} alt={t('logoBefore')} />{logo.showContentBounds && analysis && <i aria-hidden="true" style={{ left: `${analysis.bounds.x / analysis.sourceWidth * 100}%`, top: `${analysis.bounds.y / analysis.sourceHeight * 100}%`, width: `${analysis.bounds.width / analysis.sourceWidth * 100}%`, height: `${analysis.bounds.height / analysis.sourceHeight * 100}%` }} />}</div><figcaption>{t('logoBefore')}</figcaption></figure><figure><img src={logo.renderedDataUrl ?? logo.sourceDataUrl ?? ''} alt={t('logoAfter')} /><figcaption>{t('logoAfter')}</figcaption></figure></div>
-      <div className="logo-actions"><button type="button" className="text-button" onClick={() => { const previous = history.current.pop(); if (previous) onChange({ ...settings, logo: previous }) }}>{t('logoUndo')}</button><button type="button" className="text-button" onClick={() => commit({ ...defaultQrDesignSettings.logo, enabled: true, sourceDataUrl: logo.sourceDataUrl, fileName: logo.fileName, mimeType: logo.mimeType, width: logo.width, height: logo.height })}>{t('logoReset')}</button></div>
+      <div className="logo-actions"><button type="button" className="text-button" onClick={() => { const previous = history.current.pop(); if (previous) onChange((current) => ({ ...current, logo: previous })) }}>{t('logoUndo')}</button><button type="button" className="text-button" onClick={() => commit({ ...defaultQrDesignSettings.logo, enabled: true, sourceDataUrl: logo.sourceDataUrl, fileName: logo.fileName, mimeType: logo.mimeType, width: logo.width, height: logo.height })}>{t('logoReset')}</button></div>
       <Group title={t('logoContentMode')}><div className="option-row two"><Choice selected={logo.contentMode === 'full'} onClick={() => commit({ contentMode: 'full' })}>{t('logoFullBrand')}</Choice><Choice selected={logo.contentMode === 'custom'} onClick={() => commit({ contentMode: 'custom' })}>{t('logoCustomCrop')}</Choice></div>
         {logo.contentMode === 'custom' && <div className="logo-crop-controls" role="group" aria-label={t('logoCustomCrop')}><Range value={Math.round(logo.cropX * 100)} min={0} max={95} label={`${t('logoCropX')}: ${Math.round(logo.cropX * 100)}%`} onChange={(value) => commit({ cropX: value / 100 })} /><Range value={Math.round(logo.cropY * 100)} min={0} max={95} label={`${t('logoCropY')}: ${Math.round(logo.cropY * 100)}%`} onChange={(value) => commit({ cropY: value / 100 })} /><Range value={Math.round(logo.cropWidth * 100)} min={5} max={100} label={`${t('logoCropWidth')}: ${Math.round(logo.cropWidth * 100)}%`} onChange={(value) => commit({ cropWidth: value / 100 })} /><Range value={Math.round(logo.cropHeight * 100)} min={5} max={100} label={`${t('logoCropHeight')}: ${Math.round(logo.cropHeight * 100)}%`} onChange={(value) => commit({ cropHeight: value / 100 })} /><small className="field-hint">{t('logoCropHint')}</small></div>}
       </Group>
@@ -98,7 +98,7 @@ export function LogoPanel({ settings, onChange, guard, payload }: { settings: Qr
       {analysis && <div className="logo-metrics" role="status"><span>{t('logoVisibleBounds')}: {analysis.bounds.width}×{analysis.bounds.height}px</span><span>{t('logoAspectRatio')}: {analysis.aspectRatio.toFixed(2)}</span><span>{t('estimatedCoverage')}: {metrics.containerCoverage.toFixed(1)}%</span></div>}
       {quality === 'low' && <div className="color-warning" role="alert"><Icons.info /><span>{t('logoLowResolution')}</span></div>}
       <div className={`logo-guard ${guard === 'unreadable' || risky ? 'warning' : guard === 'readable' ? 'success' : ''}`} role="status" aria-live="polite"><Icons.shield /><div><strong>{t('smartLogoGuard')}</strong><p>{t(guard === 'checking' ? 'logoChecking' : guard === 'readable' ? 'logoReadable' : guard === 'unreadable' ? 'logoUnreadable' : guard === 'unknown' || guard === 'error' ? 'logoGuardError' : 'logoGuardPending')}</p>{risky && <p>{t('logoLargeWarning')}</p>}{(guard === 'unreadable' || risky) && <button type="button" className="text-button" onClick={() => commit({ size: 0.2, visibleSize: 0.82, padding: Math.min(logo.padding, 10) })}>{t('reduceLogo')}</button>}<small>{t('logoGuardDisclaimer')}</small></div></div>
-      {settings.errorCorrectionLevel !== 'H' && <div className="color-warning" role="alert"><Icons.info /><span>{t('logoEccWarning')}</span><button type="button" className="text-button" onClick={() => onChange({ ...settings, errorCorrectionLevel: 'H' })}>{t('useHCorrection')}</button></div>}
+      {settings.errorCorrectionLevel !== 'H' && <div className="color-warning" role="alert"><Icons.info /><span>{t('logoEccWarning')}</span><button type="button" className="text-button" onClick={() => onChange((current) => ({ ...current, errorCorrectionLevel: 'H' }))}>{t('useHCorrection')}</button></div>}
     </>}
     {error && <p className="error-message" role="alert">{error}</p>}
     <p className="logo-privacy"><Icons.shield />{t('logoPrivacy')}</p>

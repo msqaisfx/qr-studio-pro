@@ -181,7 +181,7 @@ export async function readLogoFile(file: File): Promise<{ sourceDataUrl: string;
   return { sourceDataUrl, mimeType, width, height }
 }
 
-export async function renderLogoDetailed(sourceDataUrl: string, options: Pick<QrLogoSettings, 'shape' | 'backgroundMode' | 'backgroundColor' | 'backgroundOpacity' | 'padding' | 'cornerRadius' | 'autoTrim' | 'removalTolerance' | 'visibleSize' | 'fit' | 'simplifyDetails' | 'contentMode' | 'cropX' | 'cropY' | 'cropWidth' | 'cropHeight'>): Promise<{ dataUrl: string; analysis: LogoVisualAnalysis }> {
+export async function renderLogoDetailed(sourceDataUrl: string, options: Pick<QrLogoSettings, 'shape' | 'backgroundMode' | 'backgroundColor' | 'backgroundOpacity' | 'padding' | 'cornerRadius' | 'autoTrim' | 'removalTolerance' | 'visibleSize' | 'fit' | 'simplifyDetails' | 'contentMode' | 'cropX' | 'cropY' | 'cropWidth' | 'cropHeight'>, requestedOutputSize = 768): Promise<{ dataUrl: string; analysis: LogoVisualAnalysis }> {
   const response = await fetch(sourceDataUrl)
   const bitmap = await createImageBitmap(await response.blob())
   const source = document.createElement('canvas'); source.width = bitmap.width; source.height = bitmap.height
@@ -194,17 +194,19 @@ export async function renderLogoDetailed(sourceDataUrl: string, options: Pick<Qr
     sourceContext.putImageData(output, 0, 0)
   }
   const crop = resolveLogoCrop(source.width, source.height, detected.analysis.detectedBounds, options.autoTrim, options.contentMode, options)
-  const canvas = document.createElement('canvas'); canvas.width = 768; canvas.height = 768
+  // Always resample from the original asset. Export never scales a 300px preview.
+  const outputSize = Math.max(256, Math.min(MAX_LOGO_DIMENSION, Math.round(requestedOutputSize)))
+  const canvas = document.createElement('canvas'); canvas.width = outputSize; canvas.height = outputSize
   const context = canvas.getContext('2d')
   if (!context) throw new Error('render')
   context.imageSmoothingEnabled = true; context.imageSmoothingQuality = 'high'
-  context.save(); createShapePath(context, options.shape, 0, 0, 768, options.cornerRadius); context.clip()
-  if (options.backgroundMode === 'custom') { context.globalAlpha = options.backgroundOpacity; context.fillStyle = options.backgroundColor; context.fillRect(0, 0, 768, 768); context.globalAlpha = 1 }
-  const inset = Math.round((Math.max(0, Math.min(24, options.padding)) / 100) * 768)
-  const visible = Math.max(0.45, Math.min(1, options.visibleSize)); const available = (768 - inset * 2) * visible
+  context.save(); createShapePath(context, options.shape, 0, 0, outputSize, options.cornerRadius); context.clip()
+  if (options.backgroundMode === 'custom') { context.globalAlpha = options.backgroundOpacity; context.fillStyle = options.backgroundColor; context.fillRect(0, 0, outputSize, outputSize); context.globalAlpha = 1 }
+  const inset = Math.round((Math.max(0, Math.min(24, options.padding)) / 100) * outputSize)
+  const visible = Math.max(0.45, Math.min(1, options.visibleSize)); const available = (outputSize - inset * 2) * visible
   const scale = (options.fit === 'cover' ? Math.max : Math.min)(available / crop.width, available / crop.height)
   const width = crop.width * scale; const height = crop.height * scale
-  context.drawImage(source, crop.x, crop.y, crop.width, crop.height, (768 - width) / 2, (768 - height) / 2, width, height)
+  context.drawImage(source, crop.x, crop.y, crop.width, crop.height, (outputSize - width) / 2, (outputSize - height) / 2, width, height)
   context.restore()
   return { dataUrl: canvas.toDataURL('image/png'), analysis: { ...detected.analysis, bounds: crop, visibleRatio: (crop.width * crop.height) / Math.max(1, source.width * source.height), aspectRatio: crop.width / Math.max(1, crop.height) } }
 }

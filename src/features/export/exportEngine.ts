@@ -1,5 +1,6 @@
 import type { QrDesignSettings } from '../../types/qr'
-import { prepareQrEngine } from '../qr/qrEngine'
+import { createDesignSnapshot } from '../qr/designSnapshot'
+import { prepareQrEngineAsync } from '../qr/qrEngine'
 import { sanitizeFilename } from './filename'
 import { exportMimeTypes, type ExportFile, type ExportOptions } from './exportTypes'
 
@@ -70,10 +71,9 @@ async function createPdf(png: Blob, options: ExportOptions): Promise<Blob> {
 
 export async function createExportFile(payload: string, settings: QrDesignSettings, options: ExportOptions): Promise<ExportFile> {
   if (!payload.trim()) throw new Error('empty-payload')
-  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
-  const effective = resolveExportSettings(settings, options)
+  const snapshot = createDesignSnapshot(payload, resolveExportSettings(settings, options), options)
   const renderSize = options.format === 'pdf' ? Math.max(2048, options.resolution) : options.resolution
-  const { engine } = prepareQrEngine(payload, effective, renderSize)
+  const { engine } = await prepareQrEngineAsync(snapshot.payload, snapshot.settings, renderSize)
   const filename = sanitizeFilename(options.filename, options.format)
 
   if (options.format === 'svg') {
