@@ -1,0 +1,24 @@
+{
+  "appUrl": "http://127.0.0.1:5176/",
+  "metrics": {
+    "initial": "Visible content: 600×360pxAspect ratio: 1.67estimated coverage: 1.1%",
+    "afterBackgroundRemoval": "Visible content: 387×130pxAspect ratio: 2.98estimated coverage: 1.1%",
+    "current": "Visible content: 600×360pxAspect ratio: 1.67estimated coverage: 1.1%",
+    "maximum": "8/8 candidate sizes decoded successfully",
+    "selectedPercent": 14,
+    "guard": "The current QR passed the automated decode test."
+  },
+  "png": {
+    "width": 512,
+    "height": 512,
+    "bytes": 25531,
+    "decoded": true
+  },
+  "styles": [
+    "seamless-fusion",
+    "adaptive-badge",
+    "minimal-cutout",
+    "premium-brand"
+  ],
+  "runtimeErrors": []
+}

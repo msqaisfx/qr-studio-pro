@@ -1,7 +1,7 @@
 {
   "name": "qr-studio-pro",
   "private": true,
-  "version": "0.9.1-beta.1",
+  "version": "0.9.2-beta.1",
   "description": "Professional local-first open-source QR code designer",
   "license": "MIT",
   "homepage": "https://msqaisfx.github.io/qr-studio-pro/",
@@ -28,6 +28,7 @@
     "verify:phase09": "node scripts/verify-phase09.mjs",
     "verify:phase10": "node scripts/verify-phase10.mjs",
     "verify:phase11": "node scripts/verify-phase11.mjs",
+    "verify:logo-v3": "node scripts/verify-smart-logo-v3.mjs",
     "typecheck": "tsc -b --pretty false"
   },
   "dependencies": {

@@ -15,6 +15,6 @@ export function prepareQrEngine(data: string, settings: QrDesignSettings, size: 
   const engine = new QRCodeStyling(createQrOptions(encodedData, settings, size, 0))
   const moduleCount = getModuleCount(engine as QRCodeStyling & QrEngineWithModules)
   const margin = calculateQuietZone(size, moduleCount, settings.quietZoneModules)
-  engine.update(createQrOptions(encodedData, settings, size, margin))
+  engine.update(createQrOptions(encodedData, settings, size, margin, moduleCount))
   return { engine, moduleCount, margin }
 }

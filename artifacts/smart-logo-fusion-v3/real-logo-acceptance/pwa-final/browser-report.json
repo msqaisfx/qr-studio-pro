@@ -1,0 +1,22 @@
+{
+  "responsive": [
+    {
+      "width": 375,
+      "overflow": 0
+    },
+    {
+      "width": 768,
+      "overflow": 0
+    },
+    {
+      "width": 1280,
+      "overflow": 0
+    },
+    {
+      "width": 1920,
+      "overflow": 0
+    }
+  ],
+  "runtimeErrors": [],
+  "consoleContainsSensitiveData": false
+}

@@ -1,3 +1,4 @@
+import type { ErrorCorrectionLevel } from 'qr-code-styling'
 import type { LogoShape, QrLogoSettings } from '../../types/qr'
 
 export const MAX_LOGO_BYTES = 5 * 1024 * 1024
@@ -24,6 +25,15 @@ export const isConservativeLogoSize = (size: number, padding: number) => size <=
 
 export interface PixelBuffer { data: Uint8ClampedArray; width: number; height: number }
 export interface TrimBounds { x: number; y: number; width: number; height: number }
+export interface LogoVisualAnalysis {
+  bounds: TrimBounds
+  detectedBounds: TrimBounds
+  sourceWidth: number
+  sourceHeight: number
+  visibleRatio: number
+  aspectRatio: number
+  edgeBackgroundRemoved: boolean
+}
 
 export function findOpaqueBounds(image: PixelBuffer, alphaThreshold = 8): TrimBounds | null {
   let left = image.width; let top = image.height; let right = -1; let bottom = -1
@@ -42,7 +52,7 @@ export function removeEdgeConnectedBackground(image: PixelBuffer, tolerance: num
   for (let x = 0; x < image.width; x += 1) edge.push(x, (image.height - 1) * image.width + x)
   for (let y = 1; y < image.height - 1; y += 1) edge.push(y * image.width, y * image.width + image.width - 1)
   const samples = edge.filter((pixel) => data[pixel * 4 + 3] > 0)
-  if (!samples.length) return { ...image, data }
+  if (!samples.length) return { width: image.width, height: image.height, data }
   const color: [number, number, number] = [0, 1, 2].map((channel) => Math.round(samples.reduce((sum, pixel) => sum + data[pixel * 4 + channel], 0) / samples.length)) as [number, number, number]
   for (const pixel of edge) if (!visited[pixel] && distance(data, pixel * 4, color) <= tolerance) { visited[pixel] = 1; queue.push(pixel) }
   for (let cursor = 0; cursor < queue.length; cursor += 1) {
@@ -51,12 +61,77 @@ export function removeEdgeConnectedBackground(image: PixelBuffer, tolerance: num
     const neighbours = [x > 0 ? pixel - 1 : -1, x + 1 < image.width ? pixel + 1 : -1, y > 0 ? pixel - image.width : -1, y + 1 < image.height ? pixel + image.width : -1]
     for (const next of neighbours) if (next >= 0 && !visited[next] && distance(data, next * 4, color) <= tolerance) { visited[next] = 1; queue.push(next) }
   }
-  return { ...image, data }
+  return { width: image.width, height: image.height, data }
+}
+
+/** Removes only tiny, detached opaque components. It is intentionally opt-in. */
+export function removeTinyDetachedDetails(image: PixelBuffer, minimumAreaRatio = 0.00035): PixelBuffer {
+  const data = new Uint8ClampedArray(image.data); const visited = new Uint8Array(image.width * image.height)
+  const minimumArea = Math.max(3, Math.round(image.width * image.height * minimumAreaRatio))
+  for (let start = 0; start < image.width * image.height; start += 1) {
+    if (visited[start] || data[start * 4 + 3] <= 8) continue
+    const component: number[] = []; const queue = [start]; visited[start] = 1
+    for (let cursor = 0; cursor < queue.length; cursor += 1) {
+      const pixel = queue[cursor]; component.push(pixel); const x = pixel % image.width; const y = Math.floor(pixel / image.width)
+      const neighbours = [x > 0 ? pixel - 1 : -1, x + 1 < image.width ? pixel + 1 : -1, y > 0 ? pixel - image.width : -1, y + 1 < image.height ? pixel + image.width : -1]
+      for (const next of neighbours) if (next >= 0 && !visited[next] && data[next * 4 + 3] > 8) { visited[next] = 1; queue.push(next) }
+    }
+    if (component.length < minimumArea) for (const pixel of component) data[pixel * 4 + 3] = 0
+  }
+  return { width: image.width, height: image.height, data }
 }
 
 export function getLogoQuality(width: number, height: number, targetPixels: number) {
   const source = Math.min(width, height)
   return source < targetPixels * 0.75 ? 'low' : source > targetPixels * 2 ? 'high' : 'good'
+}
+
+export function analyzeVisualContent(image: PixelBuffer, removeSolid = false, tolerance = 24): { image: PixelBuffer; analysis: LogoVisualAnalysis } {
+  const processed = removeSolid ? removeEdgeConnectedBackground(image, tolerance) : { width: image.width, height: image.height, data: new Uint8ClampedArray(image.data) }
+  const bounds = findOpaqueBounds(processed) ?? { x: 0, y: 0, width: image.width, height: image.height }
+  return {
+    image: processed,
+    analysis: {
+      bounds,
+      detectedBounds: bounds,
+      sourceWidth: image.width,
+      sourceHeight: image.height,
+      visibleRatio: (bounds.width * bounds.height) / Math.max(1, image.width * image.height),
+      aspectRatio: bounds.width / Math.max(1, bounds.height),
+      edgeBackgroundRemoved: removeSolid,
+    },
+  }
+}
+
+export function resolveLogoCrop(width: number, height: number, detected: TrimBounds, autoTrim: boolean, mode: QrLogoSettings['contentMode'], crop: Pick<QrLogoSettings, 'cropX' | 'cropY' | 'cropWidth' | 'cropHeight'>): TrimBounds {
+  if (mode !== 'custom') return autoTrim ? detected : { x: 0, y: 0, width, height }
+  const x = Math.round(Math.max(0, Math.min(0.95, crop.cropX)) * width)
+  const y = Math.round(Math.max(0, Math.min(0.95, crop.cropY)) * height)
+  const cropWidth = Math.max(1, Math.round(Math.max(0.05, Math.min(1, crop.cropWidth)) * width))
+  const cropHeight = Math.max(1, Math.round(Math.max(0.05, Math.min(1, crop.cropHeight)) * height))
+  return { x, y, width: Math.min(cropWidth, width - x), height: Math.min(cropHeight, height - y) }
+}
+
+const eccSpans: Record<ErrorCorrectionLevel, number> = { L: 3, M: 5, Q: 7, H: 9 }
+
+/** Returns an odd, module-aligned central span. It never reaches timing/finder regions. */
+export function getAdaptiveLogoZone(moduleCount: number, level: ErrorCorrectionLevel, requestedSize: number, aspectRatio = 1) {
+  const densityPenalty = moduleCount >= 57 ? 2 : moduleCount >= 41 ? 1 : 0
+  const shapePenalty = aspectRatio > 2.2 || aspectRatio < 0.45 ? 2 : aspectRatio > 1.45 || aspectRatio < 0.7 ? 1 : 0
+  const safeSpan = Math.max(3, eccSpans[level] - densityPenalty - shapePenalty)
+  const requestedSpan = Math.max(3, Math.round(moduleCount * requestedSize))
+  let span = Math.min(safeSpan, requestedSpan)
+  if (span % 2 === 0) span -= 1
+  return { moduleSpan: Math.max(3, span), size: Math.max(3, span) / moduleCount, safeMaximum: safeSpan / moduleCount }
+}
+
+export function getFusionMetrics(size: number, visibleSize: number, padding: number, moduleCount: number, level: ErrorCorrectionLevel, aspectRatio = 1) {
+  const zone = getAdaptiveLogoZone(moduleCount, level, size, aspectRatio)
+  return {
+    ...zone,
+    containerCoverage: zone.size * zone.size * 100,
+    visibleCoverage: zone.size * visibleSize * (1 - Math.min(24, Math.max(0, padding)) / 50) * 100,
+  }
 }
 
 export async function readLogoFile(file: File): Promise<{ sourceDataUrl: string; mimeType: typeof supportedLogoTypes[number]; width: number; height: number }> {
@@ -72,20 +147,19 @@ export async function readLogoFile(file: File): Promise<{ sourceDataUrl: string;
   return { sourceDataUrl, mimeType, width, height }
 }
 
-export async function renderLogo(sourceDataUrl: string, options: Pick<QrLogoSettings, 'shape' | 'backgroundMode' | 'backgroundColor' | 'backgroundOpacity' | 'padding' | 'cornerRadius' | 'autoTrim' | 'removalTolerance' | 'visibleSize' | 'fit'>): Promise<string> {
+export async function renderLogoDetailed(sourceDataUrl: string, options: Pick<QrLogoSettings, 'shape' | 'backgroundMode' | 'backgroundColor' | 'backgroundOpacity' | 'padding' | 'cornerRadius' | 'autoTrim' | 'removalTolerance' | 'visibleSize' | 'fit' | 'simplifyDetails' | 'contentMode' | 'cropX' | 'cropY' | 'cropWidth' | 'cropHeight'>): Promise<{ dataUrl: string; analysis: LogoVisualAnalysis }> {
   const response = await fetch(sourceDataUrl)
   const bitmap = await createImageBitmap(await response.blob())
   const source = document.createElement('canvas'); source.width = bitmap.width; source.height = bitmap.height
   const sourceContext = source.getContext('2d', { willReadFrequently: true }); if (!sourceContext) { bitmap.close(); throw new Error('render') }
   sourceContext.drawImage(bitmap, 0, 0); bitmap.close()
-  if (options.backgroundMode === 'remove-solid') {
-    const pixels = sourceContext.getImageData(0, 0, source.width, source.height)
-    const removed = removeEdgeConnectedBackground(pixels, options.removalTolerance)
-    const output = sourceContext.createImageData(removed.width, removed.height); output.data.set(removed.data)
+  let detected = analyzeVisualContent(sourceContext.getImageData(0, 0, source.width, source.height), options.backgroundMode === 'remove-solid', options.removalTolerance)
+  if (options.simplifyDetails) detected = analyzeVisualContent(removeTinyDetachedDetails(detected.image))
+  if (options.backgroundMode === 'remove-solid' || options.simplifyDetails) {
+    const output = sourceContext.createImageData(detected.image.width, detected.image.height); output.data.set(detected.image.data)
     sourceContext.putImageData(output, 0, 0)
   }
-  const bounds = options.autoTrim ? findOpaqueBounds(sourceContext.getImageData(0, 0, source.width, source.height)) : null
-  const crop = bounds ?? { x: 0, y: 0, width: source.width, height: source.height }
+  const crop = resolveLogoCrop(source.width, source.height, detected.analysis.detectedBounds, options.autoTrim, options.contentMode, options)
   const canvas = document.createElement('canvas'); canvas.width = 768; canvas.height = 768
   const context = canvas.getContext('2d')
   if (!context) throw new Error('render')
@@ -98,7 +172,11 @@ export async function renderLogo(sourceDataUrl: string, options: Pick<QrLogoSett
   const width = crop.width * scale; const height = crop.height * scale
   context.drawImage(source, crop.x, crop.y, crop.width, crop.height, (768 - width) / 2, (768 - height) / 2, width, height)
   context.restore()
-  return canvas.toDataURL('image/png')
+  return { dataUrl: canvas.toDataURL('image/png'), analysis: { ...detected.analysis, bounds: crop, visibleRatio: (crop.width * crop.height) / Math.max(1, source.width * source.height), aspectRatio: crop.width / Math.max(1, crop.height) } }
+}
+
+export async function renderLogo(sourceDataUrl: string, options: Pick<QrLogoSettings, 'shape' | 'backgroundMode' | 'backgroundColor' | 'backgroundOpacity' | 'padding' | 'cornerRadius' | 'autoTrim' | 'removalTolerance' | 'visibleSize' | 'fit' | 'simplifyDetails' | 'contentMode' | 'cropX' | 'cropY' | 'cropWidth' | 'cropHeight'>): Promise<string> {
+  return (await renderLogoDetailed(sourceDataUrl, options)).dataUrl
 }
 
 function createShapePath(context: CanvasRenderingContext2D, shape: LogoShape, x: number, y: number, size: number, cornerRadius: number) {

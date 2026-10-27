@@ -2,11 +2,13 @@ import { useEffect, useId, useRef, useState, type DragEvent } from 'react'
 import { useApp } from '../../app/appContext'
 import { Icons } from '../../components/icons'
 import { defaultQrDesignSettings, type LogoBackgroundMode, type LogoFit, type LogoGuardState, type LogoIntegrationStyle, type LogoShape, type QrDesignSettings, type QrLogoSettings } from '../../types/qr'
-import { getLogoQuality, isConservativeLogoSize, logoCoveragePercent, readLogoFile, renderLogo, visibleLogoPercent } from './logoUtils'
+import { getFusionMetrics, getLogoQuality, isConservativeLogoSize, readLogoFile, renderLogoDetailed, type LogoVisualAnalysis } from './logoUtils'
+import { findMaximumReadableLogoSize, type LogoFitAttempt } from './logoFit'
 
-export function LogoPanel({ settings, onChange, guard }: { settings: QrDesignSettings; onChange: (settings: QrDesignSettings) => void; guard: LogoGuardState }) {
+export function LogoPanel({ settings, onChange, guard, payload }: { settings: QrDesignSettings; onChange: (settings: QrDesignSettings) => void; guard: LogoGuardState; payload: string }) {
   const { t } = useApp(); const inputId = useId(); const sequence = useRef(0); const history = useRef<QrLogoSettings[]>([])
   const [error, setError] = useState<string | null>(null); const [dragging, setDragging] = useState(false)
+  const [analysis, setAnalysis] = useState<LogoVisualAnalysis | null>(null); const [finding, setFinding] = useState(false); const [attempts, setAttempts] = useState<LogoFitAttempt[]>([])
   const logo = settings.logo
   const commit = (patch: Partial<QrLogoSettings>, remember = true) => {
     if (remember) history.current.push(structuredClone(logo))
@@ -16,13 +18,13 @@ export function LogoPanel({ settings, onChange, guard }: { settings: QrDesignSet
   useEffect(() => {
     if (!logo.sourceDataUrl) return
     const request = ++sequence.current
-    renderLogo(logo.sourceDataUrl, logo)
-      .then((renderedDataUrl) => { if (request === sequence.current) { setError(null); if (renderedDataUrl !== logo.renderedDataUrl) commit({ renderedDataUrl }, false) } })
+    renderLogoDetailed(logo.sourceDataUrl, logo)
+      .then(({ dataUrl, analysis: nextAnalysis }) => { if (request === sequence.current) { setError(null); setAnalysis(nextAnalysis); if (dataUrl !== logo.renderedDataUrl) commit({ renderedDataUrl: dataUrl }, false) } })
       .catch(() => { if (request === sequence.current) setError(t('logoCorrupt')) })
     return () => { sequence.current += 1 }
   // Visual controls are deliberately enumerated to avoid stale asynchronous results.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [logo.sourceDataUrl, logo.shape, logo.backgroundMode, logo.backgroundColor, logo.backgroundOpacity, logo.padding, logo.cornerRadius, logo.autoTrim, logo.removalTolerance, logo.visibleSize, logo.fit])
+  }, [logo.sourceDataUrl, logo.shape, logo.backgroundMode, logo.backgroundColor, logo.backgroundOpacity, logo.padding, logo.cornerRadius, logo.autoTrim, logo.removalTolerance, logo.visibleSize, logo.fit, logo.simplifyDetails, logo.contentMode, logo.cropX, logo.cropY, logo.cropWidth, logo.cropHeight])
 
   async function accept(file?: File) {
     if (!file) return
@@ -39,26 +41,39 @@ export function LogoPanel({ settings, onChange, guard }: { settings: QrDesignSet
   function drop(event: DragEvent) { event.preventDefault(); setDragging(false); void accept(event.dataTransfer.files[0]) }
   function applyStyle(style: LogoIntegrationStyle) {
     const preset: Record<LogoIntegrationStyle, Partial<QrLogoSettings>> = {
-      clean: { integrationStyle: style, shape: 'rounded', backgroundMode: 'custom', backgroundColor: '#ffffff', backgroundOpacity: 1, padding: 2, cornerRadius: 18 },
-      seamless: { integrationStyle: style, shape: 'square', backgroundMode: 'transparent', backgroundOpacity: 0, padding: 0, cornerRadius: 0 },
-      badge: { integrationStyle: style, shape: 'circle', backgroundMode: 'custom', backgroundColor: '#ffffff', backgroundOpacity: 1, padding: 10, cornerRadius: 50 },
+      'seamless-fusion': { integrationStyle: style, shape: 'rounded', backgroundMode: 'transparent', backgroundOpacity: 0, padding: 0, cornerRadius: 12, visibleSize: 1 },
+      'adaptive-badge': { integrationStyle: style, shape: 'circle', backgroundMode: 'custom', backgroundColor: '#ffffff', backgroundOpacity: 0.92, padding: 7, cornerRadius: 50, visibleSize: 0.9 },
+      'minimal-cutout': { integrationStyle: style, shape: 'rounded', backgroundMode: 'transparent', backgroundOpacity: 0, padding: 1, cornerRadius: 18, visibleSize: 0.98 },
+      'premium-brand': { integrationStyle: style, shape: 'rounded', backgroundMode: 'custom', backgroundColor: '#ffffff', backgroundOpacity: 0.96, padding: 4, cornerRadius: 24, visibleSize: 0.94 },
     }
     commit(preset[style])
   }
-  const coverage = logoCoveragePercent(logo.size); const visible = visibleLogoPercent(logo.size, logo.visibleSize, logo.padding)
+  const estimatedModules = payload.length > 120 ? 41 : payload.length > 50 ? 33 : 29
+  const metrics = getFusionMetrics(logo.size, logo.visibleSize, logo.padding, estimatedModules, settings.errorCorrectionLevel, analysis?.aspectRatio ?? logo.width / Math.max(1, logo.height))
   const risky = !isConservativeLogoSize(logo.size, logo.padding)
   const quality = getLogoQuality(logo.width, logo.height, settings.exportSize * logo.size * logo.visibleSize)
+  async function findMaximum() {
+    if (!payload.trim() || !logo.renderedDataUrl || finding) return
+    setFinding(true); setAttempts([])
+    try {
+      const result = await findMaximumReadableLogoSize(payload, settings, (attempt) => setAttempts((current) => [...current, attempt]))
+      if (result.selectedSize !== null) commit({ size: result.selectedSize })
+    } finally { setFinding(false) }
+  }
 
   return <section className="logo-panel" aria-labelledby="logo-title">
     <div className="editor-heading"><div><span className="section-kicker">04 / {t('logoTool')}</span><h1 id="logo-title">{t('logoStudio')}</h1></div>{logo.enabled && <button type="button" className="text-button" onClick={() => commit({ enabled: false, sourceDataUrl: null, renderedDataUrl: null, fileName: null })}>{t('removeLogo')}</button>}</div>
     {!logo.enabled ? <label htmlFor={inputId} className={`logo-dropzone ${dragging ? 'dragging' : ''}`} onDragOver={(event) => { event.preventDefault(); setDragging(true) }} onDragLeave={() => setDragging(false)} onDrop={drop}><Icons.logo /><strong>{t('uploadLogo')}</strong><span>{t('dropLogo')}</span><small>{t('logoFileHint')}</small><input id={inputId} type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => void accept(event.target.files?.[0])} /></label> : <>
       <div className="logo-file-card"><img src={logo.renderedDataUrl ?? logo.sourceDataUrl ?? ''} alt={t('logoPreview')} /><div><strong>{logo.fileName}</strong><span>{logo.width} × {logo.height}px · {logo.mimeType}</span></div><label className="replace-logo">{t('replaceLogo')}<input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => void accept(event.target.files?.[0])} /></label></div>
-      <div className="logo-comparison" aria-label={t('logoPreview')}><figure><img src={logo.sourceDataUrl ?? ''} alt={t('logoBefore')} /><figcaption>{t('logoBefore')}</figcaption></figure><figure><img src={logo.renderedDataUrl ?? logo.sourceDataUrl ?? ''} alt={t('logoAfter')} /><figcaption>{t('logoAfter')}</figcaption></figure></div>
+      <div className="logo-comparison" aria-label={t('logoPreview')}><figure className={logo.showContentBounds ? 'show-bounds' : ''}><div className="logo-bound-stage"><img src={logo.sourceDataUrl ?? ''} alt={t('logoBefore')} />{logo.showContentBounds && analysis && <i aria-hidden="true" style={{ left: `${analysis.bounds.x / analysis.sourceWidth * 100}%`, top: `${analysis.bounds.y / analysis.sourceHeight * 100}%`, width: `${analysis.bounds.width / analysis.sourceWidth * 100}%`, height: `${analysis.bounds.height / analysis.sourceHeight * 100}%` }} />}</div><figcaption>{t('logoBefore')}</figcaption></figure><figure><img src={logo.renderedDataUrl ?? logo.sourceDataUrl ?? ''} alt={t('logoAfter')} /><figcaption>{t('logoAfter')}</figcaption></figure></div>
       <div className="logo-actions"><button type="button" className="text-button" onClick={() => { const previous = history.current.pop(); if (previous) onChange({ ...settings, logo: previous }) }}>{t('logoUndo')}</button><button type="button" className="text-button" onClick={() => commit({ ...defaultQrDesignSettings.logo, enabled: true, sourceDataUrl: logo.sourceDataUrl, fileName: logo.fileName, mimeType: logo.mimeType, width: logo.width, height: logo.height })}>{t('logoReset')}</button></div>
-      <Group title={t('logoStyle')}><div className="option-row">{(['clean','seamless','badge'] as LogoIntegrationStyle[]).map((style) => <Choice key={style} selected={logo.integrationStyle === style} onClick={() => applyStyle(style)}>{t(style === 'clean' ? 'logoClean' : style === 'seamless' ? 'logoSeamless' : 'logoBadge')}</Choice>)}</div></Group>
+      <Group title={t('logoContentMode')}><div className="option-row two"><Choice selected={logo.contentMode === 'full'} onClick={() => commit({ contentMode: 'full' })}>{t('logoFullBrand')}</Choice><Choice selected={logo.contentMode === 'custom'} onClick={() => commit({ contentMode: 'custom' })}>{t('logoCustomCrop')}</Choice></div>
+        {logo.contentMode === 'custom' && <div className="logo-crop-controls" role="group" aria-label={t('logoCustomCrop')}><Range value={Math.round(logo.cropX * 100)} min={0} max={95} label={`${t('logoCropX')}: ${Math.round(logo.cropX * 100)}%`} onChange={(value) => commit({ cropX: value / 100 })} /><Range value={Math.round(logo.cropY * 100)} min={0} max={95} label={`${t('logoCropY')}: ${Math.round(logo.cropY * 100)}%`} onChange={(value) => commit({ cropY: value / 100 })} /><Range value={Math.round(logo.cropWidth * 100)} min={5} max={100} label={`${t('logoCropWidth')}: ${Math.round(logo.cropWidth * 100)}%`} onChange={(value) => commit({ cropWidth: value / 100 })} /><Range value={Math.round(logo.cropHeight * 100)} min={5} max={100} label={`${t('logoCropHeight')}: ${Math.round(logo.cropHeight * 100)}%`} onChange={(value) => commit({ cropHeight: value / 100 })} /><small className="field-hint">{t('logoCropHint')}</small></div>}
+      </Group>
+      <Group title={t('logoStyle')}><div className="option-row two">{(['seamless-fusion','adaptive-badge','minimal-cutout','premium-brand'] as LogoIntegrationStyle[]).map((style) => <Choice key={style} selected={logo.integrationStyle === style} onClick={() => applyStyle(style)}>{t(style === 'seamless-fusion' ? 'logoFusionSeamless' : style === 'adaptive-badge' ? 'logoFusionBadge' : style === 'minimal-cutout' ? 'logoFusionMinimal' : 'logoFusionPremium')}</Choice>)}</div></Group>
       <Group title={t('logoFit')}><div className="option-row two">{(['contain','cover'] as LogoFit[]).map((fit) => <Choice key={fit} selected={logo.fit === fit} onClick={() => commit({ fit })}>{t(fit === 'contain' ? 'logoContain' : 'logoCover')}</Choice>)}</div></Group>
-      <Group title={t('logoContainerSize')}><Range value={Math.round(logo.size * 100)} min={12} max={30} label={`${Math.round(logo.size * 100)}% · ${coverage.toFixed(1)}% ${t('estimatedCoverage')}`} onChange={(value) => commit({ size: value / 100 })} /></Group>
-      <Group title={t('logoVisibleSize')}><Range value={Math.round(logo.visibleSize * 100)} min={45} max={100} label={`${Math.round(logo.visibleSize * 100)}% · ${visible.toFixed(1)}% ${t('logoActualSize')}`} onChange={(value) => commit({ visibleSize: value / 100 })} /></Group>
+      <Group title={t('logoContainerSize')}><Range value={Math.round(logo.size * 100)} min={12} max={35} label={`${Math.round(logo.size * 100)}% · ${metrics.moduleSpan} ${t('logoModules')} · ${metrics.containerCoverage.toFixed(1)}% ${t('estimatedCoverage')}`} onChange={(value) => commit({ size: value / 100 })} /></Group>
+      <Group title={t('logoVisibleSize')}><Range value={Math.round(logo.visibleSize * 100)} min={45} max={100} label={`${Math.round(logo.visibleSize * 100)}% · ${metrics.visibleCoverage.toFixed(1)}% ${t('logoActualSize')}`} onChange={(value) => commit({ visibleSize: value / 100 })} /></Group>
       <Group title={t('logoShape')}><div className="option-row">{(['square','circle','rounded'] as LogoShape[]).map((shape) => <Choice key={shape} selected={logo.shape === shape} onClick={() => commit({ shape })}>{t(shape === 'square' ? 'logoSquare' : shape === 'circle' ? 'logoCircle' : 'logoRounded')}</Choice>)}</div></Group>
       <Group title={t('logoBackground')}><div className="option-row two">{(['original','transparent','remove-solid','custom'] as LogoBackgroundMode[]).map((mode) => <Choice key={mode} selected={logo.backgroundMode === mode} onClick={() => commit({ backgroundMode: mode })}>{t(mode === 'original' ? 'logoOriginal' : mode === 'transparent' ? 'logoTransparent' : mode === 'remove-solid' ? 'logoRemoveBackground' : 'backgroundCustom')}</Choice>)}</div>
         {logo.backgroundMode === 'custom' && <><label className="logo-color"><span>{t('backgroundCustom')}</span><input aria-label={t('backgroundCustom')} type="color" value={logo.backgroundColor} onChange={(event) => commit({ backgroundColor: event.target.value })} /></label><Range value={Math.round(logo.backgroundOpacity * 100)} min={20} max={100} label={`${t('logoOpacity')}: ${Math.round(logo.backgroundOpacity * 100)}%`} onChange={(value) => commit({ backgroundOpacity: value / 100 })} /></>}
@@ -67,6 +82,14 @@ export function LogoPanel({ settings, onChange, guard }: { settings: QrDesignSet
       <Group title={t('logoPadding')}><Range value={logo.padding} min={0} max={24} label={`${logo.padding}%`} onChange={(value) => commit({ padding: value })} /></Group>
       {logo.shape === 'rounded' && <Group title={t('logoCornerRadius')}><Range value={logo.cornerRadius} min={4} max={50} label={`${logo.cornerRadius}%`} onChange={(value) => commit({ cornerRadius: value })} /></Group>}
       <label className="logo-toggle"><input type="checkbox" checked={logo.autoTrim} onChange={(event) => commit({ autoTrim: event.target.checked })} /><span>{t('logoAutoTrim')}</span></label>
+      <label className="logo-toggle"><input type="checkbox" checked={logo.showContentBounds} onChange={(event) => commit({ showContentBounds: event.target.checked })} /><span>{t('logoShowBounds')}</span></label>
+      <label className="logo-toggle"><input type="checkbox" checked={logo.adaptiveZone} onChange={(event) => commit({ adaptiveZone: event.target.checked })} /><span>{t('logoAdaptiveZone')}</span></label>
+      <label className="logo-toggle"><input type="checkbox" checked={logo.autoFit} onChange={(event) => commit({ autoFit: event.target.checked, visibleSize: event.target.checked ? 1 : logo.visibleSize, autoTrim: event.target.checked || logo.autoTrim })} /><span>{t('logoAutoFit')}</span></label>
+      <label className="logo-toggle"><input type="checkbox" checked={logo.simplifyDetails} onChange={(event) => { if (!event.target.checked || window.confirm(t('logoSimplifyConfirm'))) commit({ simplifyDetails: event.target.checked }) }} /><span>{t('logoSimplifyDetails')}</span></label>
+      <small className="field-hint">{t('logoSimplifyHint')}</small>
+      {analysis && <div className="logo-metrics" role="status"><span>{t('logoVisibleBounds')}: {analysis.bounds.width}×{analysis.bounds.height}px</span><span>{t('logoAspectRatio')}: {analysis.aspectRatio.toFixed(2)}</span><span>{t('estimatedCoverage')}: {metrics.containerCoverage.toFixed(1)}%</span></div>}
+      <button type="button" className="secondary-action logo-find-max" disabled={finding || !payload.trim()} onClick={() => void findMaximum()}>{finding ? t('logoFindingMaximum') : t('logoFindMaximum')}</button>
+      {attempts.length > 0 && <p className="field-hint" role="status">{attempts.filter((attempt) => attempt.readable).length}/{attempts.length} {t('logoSizesReadable')}</p>}
       {quality === 'low' && <div className="color-warning" role="alert"><Icons.info /><span>{t('logoLowResolution')}</span></div>}
       <div className={`logo-guard ${guard === 'unreadable' || guard === 'error' || risky ? 'warning' : guard === 'readable' ? 'success' : ''}`} role="status" aria-live="polite"><Icons.shield /><div><strong>{t('smartLogoGuard')}</strong><p>{t(guard === 'checking' ? 'logoChecking' : guard === 'readable' ? 'logoReadable' : guard === 'unreadable' ? 'logoUnreadable' : guard === 'error' ? 'logoGuardError' : 'logoGuardPending')}</p>{risky && <p>{t('logoLargeWarning')}</p>}{(guard === 'unreadable' || risky) && <button type="button" className="text-button" onClick={() => commit({ size: 0.2, visibleSize: 0.82, padding: Math.min(logo.padding, 10) })}>{t('reduceLogo')}</button>}<small>{t('logoGuardDisclaimer')}</small></div></div>
       {settings.errorCorrectionLevel !== 'H' && <div className="color-warning" role="alert"><Icons.info /><span>{t('logoEccWarning')}</span><button type="button" className="text-button" onClick={() => onChange({ ...settings, errorCorrectionLevel: 'H' })}>{t('useHCorrection')}</button></div>}

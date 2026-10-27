@@ -20,24 +20,28 @@ export function validateProject(value: unknown): SavedProject {
   if (!Object.keys(exportMimeTypes).includes(String(options.format)) || typeof options.filename !== 'string') throw new Error('invalid-project')
   const logo = isObject(design.logo) ? design.logo : null
   if (!logo || (logo.sourceDataUrl !== null && (typeof logo.sourceDataUrl !== 'string' || !/^data:image\/(png|jpeg|webp);base64,/.test(logo.sourceDataUrl) || logo.sourceDataUrl.length > MAX_PROJECT_FILE_BYTES))) throw new Error('invalid-logo')
-  return structuredClone(value) as unknown as SavedProject
+  return structuredClone({ ...value, design: { ...design, logo: { ...defaultQrDesignSettings.logo, ...logo } } }) as unknown as SavedProject
 }
 
 function migrateLegacyProject(value: unknown): unknown {
-  if (!isObject(value) || value.schemaVersion !== 1 || !isObject(value.design)) return value
+  if (!isObject(value) || ![1, 2].includes(Number(value.schemaVersion)) || !isObject(value.design)) return value
   const design = value.design; const oldLogo = isObject(design.logo) ? design.logo : {}
   const logo = {
     ...defaultQrDesignSettings.logo,
     ...oldLogo,
     backgroundMode: oldLogo.backgroundMode === 'white' ? 'custom' : oldLogo.backgroundMode ?? defaultQrDesignSettings.logo.backgroundMode,
   }
-  return { ...value, schemaVersion: PROJECT_SCHEMA_VERSION, design: { ...design, logo } }
+  const legacyStyle = oldLogo.integrationStyle
+  return { ...value, schemaVersion: PROJECT_SCHEMA_VERSION, design: { ...design, logo: {
+    ...logo,
+    integrationStyle: legacyStyle === 'seamless' ? 'seamless-fusion' : legacyStyle === 'badge' ? 'adaptive-badge' : legacyStyle === 'clean' ? 'minimal-cutout' : logo.integrationStyle,
+  } } }
 }
 
 export function parseProjectFile(text: string): SavedProject {
   if (new TextEncoder().encode(text).length > MAX_PROJECT_FILE_BYTES) throw new Error('file-too-large')
   let value: unknown; try { value = JSON.parse(text) } catch { throw new Error('malformed-json') }
-  if (!isObject(value) || value.kind !== PROJECT_FILE_KIND || ![1, PROJECT_SCHEMA_VERSION].includes(Number(value.schemaVersion))) throw new Error('unsupported-version')
+  if (!isObject(value) || value.kind !== PROJECT_FILE_KIND || ![1, 2, PROJECT_SCHEMA_VERSION].includes(Number(value.schemaVersion))) throw new Error('unsupported-version')
   return validateProject(migrateLegacyProject(value.project))
 }
 

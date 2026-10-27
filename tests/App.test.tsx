@@ -68,7 +68,7 @@ describe('QR Studio Pro', () => {
     const user = userEvent.setup()
     renderApp()
     await user.click(screen.getByRole('button', { name: 'فتح تخصيص الشعار' }))
-    expect(await screen.findByRole('heading', { name: 'استوديو الشعار الذكي 2.0' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'محرك دمج الشعار الذكي 3.0' })).toBeInTheDocument()
     expect(screen.getByText(/PNG أو JPEG أو WebP/)).toBeInTheDocument()
   })
 

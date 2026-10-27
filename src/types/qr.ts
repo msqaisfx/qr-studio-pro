@@ -22,7 +22,8 @@ export interface QrBackgroundStyle {
 export type LogoShape = 'square' | 'circle' | 'rounded'
 export type LogoBackgroundMode = 'original' | 'transparent' | 'remove-solid' | 'custom'
 export type LogoFit = 'contain' | 'cover'
-export type LogoIntegrationStyle = 'clean' | 'seamless' | 'badge'
+export type LogoIntegrationStyle = 'seamless-fusion' | 'adaptive-badge' | 'minimal-cutout' | 'premium-brand'
+export type LogoContentMode = 'full' | 'custom'
 export interface QrLogoSettings {
   enabled: boolean
   sourceDataUrl: string | null
@@ -44,6 +45,15 @@ export interface QrLogoSettings {
   cornerRadius: number
   autoTrim: boolean
   removalTolerance: number
+  showContentBounds: boolean
+  adaptiveZone: boolean
+  autoFit: boolean
+  simplifyDetails: boolean
+  contentMode: LogoContentMode
+  cropX: number
+  cropY: number
+  cropWidth: number
+  cropHeight: number
 }
 export type LogoGuardState = 'idle' | 'checking' | 'readable' | 'unreadable' | 'error'
 
@@ -76,5 +86,5 @@ export const defaultQrDesignSettings: QrDesignSettings = {
   cornerSquareColor: defaultCornerSquareColor,
   cornerDotColor: defaultCornerDotColor,
   background: { color: '#ffffff', transparent: false },
-  logo: { enabled: false, sourceDataUrl: null, renderedDataUrl: null, fileName: null, mimeType: null, width: 0, height: 0, size: 0.18, visibleSize: 0.96, shape: 'rounded', fit: 'contain', integrationStyle: 'clean', backgroundMode: 'custom', backgroundColor: '#ffffff', backgroundOpacity: 1, padding: 2, cornerRadius: 18, autoTrim: true, removalTolerance: 24 },
+  logo: { enabled: false, sourceDataUrl: null, renderedDataUrl: null, fileName: null, mimeType: null, width: 0, height: 0, size: 0.2, visibleSize: 0.98, shape: 'rounded', fit: 'contain', integrationStyle: 'minimal-cutout', backgroundMode: 'transparent', backgroundColor: '#ffffff', backgroundOpacity: 1, padding: 1, cornerRadius: 18, autoTrim: true, removalTolerance: 24, showContentBounds: false, adaptiveZone: true, autoFit: true, simplifyDetails: false, contentMode: 'full', cropX: 0, cropY: 0, cropWidth: 1, cropHeight: 1 },
 }

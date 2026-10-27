@@ -1,0 +1,119 @@
+{
+  "source": {
+    "fileName": "C513347B-138A-4331-BD6A-D6724F959540.PNG",
+    "format": "png",
+    "width": 1024,
+    "height": 1024,
+    "sha256": "9879d5e3bd1b754f9658655eaac9cd34936870c7b488168d08d0f389dd3ea2fb"
+  },
+  "crop": {
+    "x": 250,
+    "y": 65,
+    "width": 560,
+    "height": 570,
+    "reviewable": true
+  },
+  "fullInitial": "Visible content: 774×706pxAspect ratio: 1.10estimated coverage: 3.0%",
+  "fullProcessed": "Visible content: 774×706pxAspect ratio: 1.10estimated coverage: 3.0%",
+  "maximum": {
+    "result": "3/3 candidate sizes decoded successfully",
+    "selectedPercent": 24,
+    "modules": "37 × 37 modules",
+    "guard": "The current QR passed the automated decode test."
+  },
+  "distinctAppliedSizes": [
+    {
+      "requested": 12,
+      "span": 3,
+      "applied": 0.08108108108108109,
+      "readable": true,
+      "bytes": 31503,
+      "sha256": "a1262d3e861c7707964755231431bdb2b4546418334882f828a5dbeb1b63cfda",
+      "duplicateOf": null,
+      "file": "real-logo-size-3.png"
+    },
+    {
+      "requested": 14,
+      "span": 5,
+      "applied": 0.13513513513513514,
+      "readable": true,
+      "bytes": 33712,
+      "sha256": "f352a5ed9b568fe910863bcc05a11097cacf12c22fd0bd18f195fc77e65dbe01",
+      "duplicateOf": null,
+      "file": "real-logo-size-5.png"
+    },
+    {
+      "requested": 20,
+      "span": 7,
+      "applied": 0.1891891891891892,
+      "readable": true,
+      "bytes": 33712,
+      "sha256": "f352a5ed9b568fe910863bcc05a11097cacf12c22fd0bd18f195fc77e65dbe01",
+      "duplicateOf": 5,
+      "file": "real-logo-size-7.png"
+    },
+    {
+      "requested": 23,
+      "span": 9,
+      "applied": 0.24324324324324326,
+      "readable": true,
+      "bytes": 36117,
+      "sha256": "aa572a95820b1ef888040bf6214f46b0afbc7a2387f996484ec9f16bba0451bb",
+      "duplicateOf": null,
+      "file": "real-logo-size-9.png"
+    }
+  ],
+  "exports": [
+    {
+      "format": "png",
+      "bytes": 36117,
+      "sha256": "aa572a95820b1ef888040bf6214f46b0afbc7a2387f996484ec9f16bba0451bb",
+      "path": "real-logo-final-png.png",
+      "generatedByApp": true,
+      "generatedByEquivalentPdfLibPipeline": false
+    },
+    {
+      "format": "svg",
+      "bytes": 718990,
+      "sha256": "e2e3b1ccde1c99906a22e9b78ee8d48521734c9a06eb223432182311598ea105",
+      "path": "real-logo-final-svg.svg",
+      "generatedByApp": true,
+      "generatedByEquivalentPdfLibPipeline": false
+    },
+    {
+      "format": "webp",
+      "bytes": 29246,
+      "sha256": "c7d031342567f741a9d43286ef9d404ad6ac6451f13ddfc71f34957b4a4566af",
+      "path": "real-logo-final-webp.webp",
+      "generatedByApp": true,
+      "generatedByEquivalentPdfLibPipeline": false
+    },
+    {
+      "format": "jpeg",
+      "bytes": 61435,
+      "sha256": "07f65406e065e2f989f41ad84287e4fd7287f18f0304f03b3d429cf1cf242ece",
+      "path": "real-logo-final-jpeg.jpg",
+      "generatedByApp": true,
+      "generatedByEquivalentPdfLibPipeline": false
+    },
+    {
+      "format": "pdf",
+      "bytes": 20743,
+      "sha256": "ff26763a6dd7ddb78e952938884bac1ef27d4f24fbb7b8fede4b7f9b93727da1",
+      "path": "real-logo-final-pdf.pdf",
+      "generatedByApp": false,
+      "generatedByEquivalentPdfLibPipeline": true
+    }
+  ],
+  "symbolMetrics": "Visible content: 563×573pxAspect ratio: 0.98estimated coverage: 5.8%",
+  "symbolExport": {
+    "format": "png",
+    "bytes": 34448,
+    "sha256": "f9e842df2231515655f4f9568a5d6fa3d460442d53e1683750a6dd4dfd4b5390",
+    "path": "real-logo-symbol-focus.png",
+    "width": 512,
+    "height": 512,
+    "readable": true
+  },
+  "runtimeErrors": []
+}
