@@ -134,6 +134,40 @@ export function getFusionMetrics(size: number, visibleSize: number, padding: num
   }
 }
 
+export const getLogoVisualScale = (visibleSize: number, padding: number) =>
+  Math.max(0.01, Math.min(1, visibleSize) * (1 - Math.min(24, Math.max(0, padding)) / 50))
+
+export interface ResolvedLogoGeometry {
+  requestedSize: number
+  appliedSize: number
+  containerSize: number
+  maskModuleSpan: number
+  safeMaximum: number
+  constrained: boolean
+  reason: 'manual-exact' | 'auto-tested' | 'library-limit'
+}
+
+/** Shared by live preview and all exporters. `size` describes visible artwork rather than its square carrier. */
+export function resolveLogoGeometry(logo: Pick<QrLogoSettings, 'size' | 'sizeMode' | 'visibleSize' | 'padding'>, moduleCount: number, level: ErrorCorrectionLevel, aspectRatio = 1): ResolvedLogoGeometry {
+  const requestedSize = Math.min(0.35, Math.max(0.05, logo.size))
+  const safe = getAdaptiveLogoZone(moduleCount, level, requestedSize, aspectRatio)
+  const visualScale = getLogoVisualScale(logo.visibleSize, logo.padding)
+  const requestedCarrier = requestedSize / visualScale
+  const maximumSpan = Math.max(1, moduleCount - 14)
+  let maskModuleSpan = Math.max(1, Math.ceil(requestedCarrier * moduleCount))
+  if (maskModuleSpan % 2 === 0) maskModuleSpan += 1
+  maskModuleSpan = Math.min(maximumSpan % 2 === 0 ? maximumSpan - 1 : maximumSpan, maskModuleSpan)
+  const containerSize = maskModuleSpan / moduleCount
+  const libraryLimited = containerSize + 0.0005 < requestedCarrier
+  const appliedSize = libraryLimited ? containerSize * visualScale : requestedSize
+  return { requestedSize, appliedSize, containerSize, maskModuleSpan, safeMaximum: safe.safeMaximum, constrained: libraryLimited, reason: libraryLimited ? 'library-limit' : logo.sizeMode === 'auto' ? 'auto-tested' : 'manual-exact' }
+}
+
+const correctionArea: Record<ErrorCorrectionLevel, number> = { L: .07, M: .15, Q: .25, H: .3 }
+/** qr-code-styling's imageSize is an ECC-area fraction, not a linear percentage. */
+export const toLibraryImageSize = (geometry: Pick<ResolvedLogoGeometry, 'maskModuleSpan'>, moduleCount: number, level: ErrorCorrectionLevel) =>
+  (geometry.maskModuleSpan ** 2 + .01) / (correctionArea[level] * moduleCount ** 2)
+
 export async function readLogoFile(file: File): Promise<{ sourceDataUrl: string; mimeType: typeof supportedLogoTypes[number]; width: number; height: number }> {
   const bytes = new Uint8Array(await file.arrayBuffer())
   const mimeType = validateLogoBytes(bytes, file.size)

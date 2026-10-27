@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { createQrOptions } from '../src/features/qr/qrOptions'
-import { analyzeVisualContent, detectImageMime, findOpaqueBounds, getAdaptiveLogoZone, getFusionMetrics, getLogoQuality, isConservativeLogoSize, logoCoveragePercent, MAX_LOGO_BYTES, removeEdgeConnectedBackground, removeTinyDetachedDetails, resolveLogoCrop, validateLogoBytes, visibleLogoPercent } from '../src/features/qr/logoUtils'
+import { analyzeVisualContent, detectImageMime, findOpaqueBounds, getAdaptiveLogoZone, getFusionMetrics, getLogoQuality, isConservativeLogoSize, logoCoveragePercent, MAX_LOGO_BYTES, removeEdgeConnectedBackground, removeTinyDetachedDetails, resolveLogoCrop, resolveLogoGeometry, toLibraryImageSize, validateLogoBytes, visibleLogoPercent } from '../src/features/qr/logoUtils'
 import { defaultQrDesignSettings } from '../src/types/qr'
 import { buildLogoFitCandidates } from '../src/features/qr/logoFit'
 
@@ -26,7 +26,8 @@ describe('logo security and QR integration', () => {
   it('passes the processed logo to qr-code-styling with hidden background dots', () => {
     const settings = { ...defaultQrDesignSettings, logo: { ...defaultQrDesignSettings.logo, enabled: true, renderedDataUrl: 'data:image/png;base64,AA==' } }
     const options = createQrOptions('test', settings)
-    expect(options.image).toBe(settings.logo.renderedDataUrl)
+    expect(options.image).toMatch(/^data:image\/png;base64,/)
+    expect(options.image).not.toBe(settings.logo.renderedDataUrl)
     expect(options.imageOptions).toMatchObject({ hideBackgroundDots: true, imageSize: settings.logo.size, margin: 0 })
   })
 
@@ -100,5 +101,13 @@ describe('logo security and QR integration', () => {
     expect(candidates.length).toBeLessThan(8)
     expect(candidates.every((candidate) => candidate.appliedSize <= 3 / 37)).toBe(true)
     expect(buildLogoFitCandidates(37, 'H', 1).length).toBeGreaterThan(candidates.length)
+  })
+
+  it.each([.05, .10, .15, .20, .25, .30, .35])('keeps manual requested visible size authoritative at %s', (size) => {
+    const logo = { ...structuredClone(defaultQrDesignSettings.logo), size, sizeMode: 'manual' as const }
+    const geometry = resolveLogoGeometry(logo, 37, 'H', 1.4)
+    expect(geometry.appliedSize).toBeCloseTo(size, 5)
+    expect(geometry.reason).toBe('manual-exact')
+    expect(toLibraryImageSize(geometry, 37, 'H')).toBeGreaterThan(0)
   })
 })

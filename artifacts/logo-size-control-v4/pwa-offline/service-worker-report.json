@@ -1,0 +1,13 @@
+{
+  "registered": true,
+  "controlled": true,
+  "cacheNames": [
+    "qr-studio-91f5edde9f0c"
+  ],
+  "cacheEntries": 31,
+  "oldCacheCleanup": true,
+  "skipWaitingMessage": true,
+  "navigationFallback": true,
+  "indexedDbTouched": false,
+  "sensitivePayloadCached": false
+}

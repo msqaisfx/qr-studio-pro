@@ -24,6 +24,7 @@ export type LogoBackgroundMode = 'original' | 'transparent' | 'remove-solid' | '
 export type LogoFit = 'contain' | 'cover'
 export type LogoIntegrationStyle = 'seamless-fusion' | 'adaptive-badge' | 'minimal-cutout' | 'premium-brand'
 export type LogoContentMode = 'full' | 'custom'
+export type LogoSizeMode = 'manual' | 'auto'
 export interface QrLogoSettings {
   enabled: boolean
   sourceDataUrl: string | null
@@ -32,8 +33,9 @@ export interface QrLogoSettings {
   mimeType: 'image/png' | 'image/jpeg' | 'image/webp' | null
   width: number
   height: number
-  /** Outer area reserved by qr-code-styling. Kept as `size` for v1 project compatibility. */
+  /** Requested visible-logo size relative to the complete QR. Kept as `size` for project compatibility. */
   size: number
+  sizeMode: LogoSizeMode
   visibleSize: number
   shape: LogoShape
   fit: LogoFit
@@ -86,5 +88,5 @@ export const defaultQrDesignSettings: QrDesignSettings = {
   cornerSquareColor: defaultCornerSquareColor,
   cornerDotColor: defaultCornerDotColor,
   background: { color: '#ffffff', transparent: false },
-  logo: { enabled: false, sourceDataUrl: null, renderedDataUrl: null, fileName: null, mimeType: null, width: 0, height: 0, size: 0.2, visibleSize: 0.98, shape: 'rounded', fit: 'contain', integrationStyle: 'minimal-cutout', backgroundMode: 'transparent', backgroundColor: '#ffffff', backgroundOpacity: 1, padding: 1, cornerRadius: 18, autoTrim: true, removalTolerance: 24, showContentBounds: false, adaptiveZone: true, autoFit: true, simplifyDetails: false, contentMode: 'full', cropX: 0, cropY: 0, cropWidth: 1, cropHeight: 1 },
+  logo: { enabled: false, sourceDataUrl: null, renderedDataUrl: null, fileName: null, mimeType: null, width: 0, height: 0, size: 0.2, sizeMode: 'manual', visibleSize: 0.98, shape: 'rounded', fit: 'contain', integrationStyle: 'minimal-cutout', backgroundMode: 'transparent', backgroundColor: '#ffffff', backgroundOpacity: 1, padding: 1, cornerRadius: 18, autoTrim: true, removalTolerance: 24, showContentBounds: false, adaptiveZone: true, autoFit: false, simplifyDetails: false, contentMode: 'full', cropX: 0, cropY: 0, cropWidth: 1, cropHeight: 1 },
 }

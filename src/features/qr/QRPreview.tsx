@@ -6,7 +6,7 @@ import { getContentKind } from '../../utils/content'
 import { Icons } from '../../components/icons'
 import type { LogoGuardState, QrDesignSettings } from '../../types/qr'
 import { encodeQrData } from './encoding'
-import { prepareQrEngine } from './qrEngine'
+import { appendPreparedQr, prepareQrEngine } from './qrEngine'
 import { QR_SIZE } from './qrOptions'
 
 interface QRPreviewProps {
@@ -36,15 +36,15 @@ export function QRPreview({ value, settings, onLogoGuardChange, onOpenExport }: 
       return
     }
 
+    let cancelled = false
     try {
       const { engine: qr, moduleCount: count } = prepareQrEngine(normalizedValue, settings, QR_SIZE)
-      qr.append(container)
-      qrRef.current = qr
-      queueMicrotask(() => setModuleCount(count))
+      void appendPreparedQr(qr, container).then(() => { if (!cancelled) { qrRef.current = qr; setModuleCount(count) } }).catch(() => { if (!cancelled) setError(t('generationError')) })
     } catch {
       qrRef.current = null
       queueMicrotask(() => setError(t('generationError')))
     }
+    return () => { cancelled = true }
   }, [normalizedValue, settings, t])
 
   useEffect(() => {
