@@ -1,7 +1,7 @@
 # Smart Logo Studio 2.0 — Local QA Evidence
 
-Date: 2026-10-27  
-Branch: `feature/smart-logo-studio-v2`  
+Date: 2026-10-27
+Branch: `feature/smart-logo-studio-v2`
 Target: `v0.9.1-beta.1`
 
 ## Root cause and correction
